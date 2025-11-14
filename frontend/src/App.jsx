@@ -25,12 +25,13 @@ import DashboardPage from "../pages/Dashboard";
 import LogoIcon from "../components/logoicon";
 import Logo  from "../components/logo";
 import Page404 from "../pages/page404";
+import Homepage from "../pages/homepage";
 
 export default function App() {
   const links = [
     {
       label: "Dashboard",
-      href: "/",
+      href: "/dashboard",
       icon: (
         <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
@@ -127,13 +128,14 @@ const Dashboard = () => {
   return (
     <>
     <Routes>
+      <Route path="/" element={<Homepage />} />
       <Route path="/clients" element={<Clients />} />
       <Route path="/invoices" element={<Invoices />} />
       <Route path="/invoice-form" element={<InvoiceForm />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/logout" element={<Logout />} />
-      <Route path="/" element={<DashboardPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="*" element={<Page404 />} />
     </Routes>
     </>
