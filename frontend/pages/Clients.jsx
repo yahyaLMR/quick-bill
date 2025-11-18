@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-react';
 
+/**
+ * Clients Component
+ * 
+ * Purpose: Manage client records with CRUD operations
+ * Storage: SessionStorage (key: 'clients')
+ * Used by: InvoiceForm (client picker), Invoices (client data)
+ * 
+ * Data Structure:
+ * {
+ *   id: number,
+ *   name: string,
+ *   address: string,
+ *   ice: string (ICE tax identification number)
+ * }
+ */
 const Clients = () => {
-  // Initialize clients from sessionStorage or use default data
+  // Initialize clients from sessionStorage or use default sample data
   const [clients, setClients] = useState(() => {
     const savedClients = sessionStorage.getItem('clients');
     if (savedClients) {
@@ -15,19 +30,28 @@ const Clients = () => {
     ];
   });
 
-  // Save clients to sessionStorage whenever they change
+  // ============================================
+  // DATA PERSISTENCE
+  // ============================================
+  // Auto-save to sessionStorage whenever clients array changes
+  // This ensures InvoiceForm always has up-to-date client list
   useEffect(() => {
     sessionStorage.setItem('clients', JSON.stringify(clients));
   }, [clients]);
 
+  // ============================================
+  // FORM STATE MANAGEMENT
+  // ============================================
   const [formData, setFormData] = useState({
     name: '',
     address: '',
     ice: '',
   });
 
+  // Track which client is being edited (null = add new)
   const [editingId, setEditingId] = useState(null);
 
+  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({

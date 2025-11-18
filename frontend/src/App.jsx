@@ -26,7 +26,32 @@ import Logo  from "../components/logo";
 import Page404 from "../pages/page404";
 import Homepage from "../pages/homepage";
 
+/**
+ * Main App Component
+ * 
+ * Structure:
+ * - Sidebar navigation with collapsible menu
+ * - Main content area with routing
+ * 
+ * Routes:
+ * / - Homepage
+ * /dashboard - Dashboard overview
+ * /clients - Client management (CRUD)
+ * /invoices - Invoice list with filters
+ * /invoice-form - Create new invoices
+ * /profile - User profile
+ * /settings - Application settings
+ * /logout - Logout page
+ * 
+ * Data Flow:
+ * Settings → InvoiceForm → Invoices
+ * Clients → InvoiceForm → Invoices
+ * Profile (independent)
+ * 
+ * All data stored in sessionStorage for persistence
+ */
 export default function App() {
+  // Navigation links configuration
   const links = [
     {
       label: "Dashboard",

@@ -10,6 +10,28 @@ import {
   IconUpload,
 } from '@tabler/icons-react';
 
+/**
+ * Settings Component
+ * 
+ * Purpose: Configure application-wide settings for invoicing
+ * Storage: SessionStorage (key: 'appSettings')
+ * Used by: InvoiceForm, Invoices (preview/display), Profile
+ * 
+ * Configuration Sections:
+ * 1. Company Information - Name, address, ICE, logo (appears on invoices)
+ * 2. VAT Configuration - Enable/disable, rate, mode (global vs per-item)
+ * 3. Currency - Symbol used throughout the application
+ * 4. Invoice Numbering - Prefix, zero padding, yearly reset
+ * 5. Business Type - Services/Commerce with monthly caps
+ * 
+ * Data Structure:
+ * {
+ *   companyName, companyAddress, companyICE, logoDataUrl,
+ *   vatEnabled, vatRate (decimal 0-1), vatMode ('global' | 'per-item'),
+ *   currency, numberingPrefix, zeroPadding, resetNumberYearly,
+ *   businessType, monthlyCap
+ * }
+ */
 const Settings = () => {
   const fileInputRef = useRef(null);
 
@@ -42,10 +64,21 @@ const Settings = () => {
   // Check if there are unsaved changes
   const hasChanges = JSON.stringify(settings) !== JSON.stringify(originalSettings);
 
+  // ============================================
+  // SETTINGS MANAGEMENT
+  // ============================================
+  
+  // Update settings state (does not save until handleSave is called)
   const handleChange = (updates) => {
     setSettings((prev) => ({ ...prev, ...updates }));
   };
 
+  /**
+   * Save settings to sessionStorage
+   * Used by: InvoiceForm (VAT, currency, numbering)
+   *          Invoices (company info for previews)
+   * Button only enabled when hasChanges = true
+   */
   const handleSave = () => {
     sessionStorage.setItem('appSettings', JSON.stringify(settings));
     setOriginalSettings(settings);
@@ -74,7 +107,7 @@ const Settings = () => {
     <div className="flex-1 overflow-auto p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="sticky top-0 z-10 backdrop-blur-lg px-6 py-4 mb-2">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
@@ -319,10 +352,12 @@ const Settings = () => {
                   type="number"
                   min="1"
                   max="8"
-                  value={settings.zeroPadding}
-                  onChange={(e) =>
-                    handleChange({ zeroPadding: parseInt(e.target.value) || 1 })
-                  }
+                  value={(settings.zeroPadding ?? 4).toString()}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    const padding = isNaN(value) ? 1 : Math.max(1, Math.min(8, value));
+                    handleChange({ zeroPadding: padding });
+                  }}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -389,10 +424,13 @@ const Settings = () => {
                 <input
                   type="number"
                   min="0"
-                  value={settings.monthlyCap}
-                  onChange={(e) =>
-                    handleChange({ monthlyCap: parseFloat(e.target.value) || 0 })
-                  }
+                  step="0.01"
+                  value={(settings.monthlyCap ?? 0).toString()}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    const cap = isNaN(value) ? 0 : Math.max(0, value);
+                    handleChange({ monthlyCap: cap });
+                  }}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

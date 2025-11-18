@@ -11,6 +11,26 @@ import {
   IconCamera,
 } from '@tabler/icons-react';
 
+/**
+ * Profile Component
+ * 
+ * Purpose: Manage user profile information with edit mode
+ * Storage: SessionStorage (key: 'userProfile')
+ * 
+ * Features:
+ * - View/Edit mode toggle
+ * - Avatar with hover effect
+ * - Personal information (name, email, phone, bio)
+ * - Company information (name, role, location)
+ * - Quick stats display
+ * 
+ * Data Structure:
+ * {
+ *   name, email, phone, bio, avatar,
+ *   company: { name, role, location },
+ *   stats: { clients, invoices, revenue }
+ * }
+ */
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(() => {

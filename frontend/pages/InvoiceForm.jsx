@@ -1,8 +1,729 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import {
+  IconFileInvoice,
+  IconUser,
+  IconPlus,
+  IconTrash,
+  IconEye,
+  IconDeviceFloppy,
+  IconX,
+} from '@tabler/icons-react';
 
+/**
+ * InvoiceForm Component
+ * 
+ * Purpose: Create new invoices with line items, VAT calculations, and preview
+ * 
+ * Data Sources:
+ * - Settings (sessionStorage: 'appSettings') - VAT config, currency, numbering
+ * - Clients (sessionStorage: 'clients') - Client picker dropdown
+ * - Invoices (sessionStorage: 'invoices') - Auto-increment invoice numbers
+ * 
+ * Features:
+ * - Dynamic line items with add/remove
+ * - Two VAT modes: global (single rate) or per-item (individual rates)
+ * - Discount support (per item and global)
+ * - Live preview before saving
+ * - Auto-numbered invoices based on settings
+ * 
+ * VAT Calculation Modes:
+ * 1. Global Mode: Apply single VAT rate to subtotal after discount
+ * 2. Per-Item Mode: Each item has its own VAT rate, aggregated after discount
+ */
 const InvoiceForm = () => {
+  // Load settings and clients from sessionStorage with proper defaults
+  const savedSettings = sessionStorage.getItem('appSettings');
+  const settings = savedSettings ? JSON.parse(savedSettings) : {
+    vatEnabled: true,
+    vatRate: 0.2,
+    vatMode: 'global',
+    currency: 'DH',
+    numberingPrefix: 'INV',
+    zeroPadding: 4,
+    companyName: 'Your Company',
+    companyAddress: 'Your Address',
+    companyICE: 'Your ICE',
+  };
+  const clients = JSON.parse(sessionStorage.getItem('clients') || '[]');
+  
+  // Get next invoice number from existing invoices
+  const existingInvoices = JSON.parse(sessionStorage.getItem('invoices') || '[]');
+  const nextNumber = existingInvoices.length > 0 
+    ? Math.max(...existingInvoices.map(inv => inv.id || 0)) + 1 
+    : 1;
+
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientAddress: '',
+    clientICE: '',
+    dueDate: '',
+    notes: '',
+    discount: 0,
+    items: [
+      {
+        description: '',
+        quantity: 1,
+        unitPrice: 0,
+        taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
+          ? (settings.vatRate || 0.2) 
+          : 0,
+        discount: 0,
+      },
+    ],
+  });
+
+  const [showPreview, setShowPreview] = useState(false);
+  const previewRef = useRef(null);
+
+  const currency = settings.currency || 'DH';
+
+  // Client picker
+  const pickClient = (id) => {
+    const client = clients.find((c) => String(c.id) === String(id));
+    if (!client) return;
+    setFormData({
+      ...formData,
+      clientName: client.name || '',
+      clientAddress: client.address || '',
+      clientICE: client.ice || '',
+    });
+  };
+
+  // Item management
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [
+        ...formData.items,
+        {
+          description: '',
+          quantity: 1,
+          unitPrice: 0,
+          taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
+            ? (settings.vatRate || 0.2) 
+            : 0,
+          discount: 0,
+        },
+      ],
+    });
+  };
+
+  const removeItem = (index) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const updateItem = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    setFormData({ ...formData, items: newItems });
+  };
+
+  // ============================================
+  // CALCULATION FUNCTIONS
+  // ============================================
+  
+  /**
+   * Calculate item base amount after per-item discount
+   * Used in per-item VAT mode calculations
+   */
+  const itemBaseAfterItemDiscount = (item) => {
+    const base = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+    const afterItemDiscount = base * (1 - (Number(item.discount) || 0) / 100);
+    return afterItemDiscount;
+  };
+
+  /**
+   * Calculate total for a single line item
+   * Behavior depends on VAT mode from settings
+   */
+  const calcItemTotal = (item) => {
+    if (settings.vatMode === 'per-item') {
+      // Per-item mode: Include individual VAT in item total
+      const base = itemBaseAfterItemDiscount(item);
+      const tax = settings.vatEnabled ? base * (Number(item.taxRate) || 0) : 0;
+      return base + tax;
+    }
+    // Global mode: Just quantity × price (VAT added at subtotal level)
+    return (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+  };
+
+  /**
+   * Calculate aggregated bases for per-item VAT mode
+   * Returns subtotal and tax after applying global discount
+   */
+  const calculatePerItemBases = () => {
+    // Sum all item bases after their individual discounts
+    const baseSum = formData.items.reduce((sum, it) => sum + itemBaseAfterItemDiscount(it), 0);
+    
+    // Sum all individual VAT amounts
+    const taxSum = settings.vatEnabled
+      ? formData.items.reduce(
+          (sum, it) => sum + itemBaseAfterItemDiscount(it) * (Number(it.taxRate) || 0),
+          0
+        )
+      : 0;
+    
+    // Apply global discount to both base and tax
+    const globalFactor = 1 - (Number(formData.discount) || 0) / 100;
+    return { discountedBase: baseSum * globalFactor, discountedTax: taxSum * globalFactor };
+  };
+
+  /**
+   * Calculate invoice subtotal (before VAT)
+   * Accounts for VAT mode and global discount
+   */
+  const calculateSubtotal = () => {
+    if (settings.vatMode === 'per-item') {
+      // Per-item mode: Use pre-calculated discounted base
+      return calculatePerItemBases().discountedBase;
+    }
+    // Global mode: Sum items, then apply global discount
+    const base = formData.items.reduce(
+      (sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
+      0
+    );
+    const discountAmount = base * ((Number(formData.discount) || 0) / 100);
+    return Math.max(base - discountAmount, 0);
+  };
+
+  /**
+   * Calculate total VAT amount
+   * Behavior depends on VAT mode from settings
+   */
+  const calculateVAT = () => {
+    if (!settings.vatEnabled) return 0;
+    
+    if (settings.vatMode === 'per-item') {
+      // Per-item mode: Use pre-calculated discounted tax
+      return calculatePerItemBases().discountedTax;
+    }
+    
+    // Global mode: Apply single rate to subtotal
+    const rate = Number(settings.vatRate || 0.2);
+    return calculateSubtotal() * rate;
+  };
+
+  const calculateTotal = () => calculateSubtotal() + calculateVAT();
+
+  // Submit handler
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const now = new Date();
+    const invoice = {
+      id: nextNumber,
+      number: `INV-${String(nextNumber).padStart(3, '0')}`,
+      displayNumber: `${settings.numberingPrefix || 'INV'}-${now.getFullYear()}-${String(nextNumber).padStart(settings.zeroPadding || 4, '0')}`,
+      date: now.toISOString().split('T')[0],
+      dueDate: formData.dueDate,
+      clientName: formData.clientName,
+      clientAddress: formData.clientAddress,
+      clientICE: formData.clientICE,
+      status: 'pending',
+      items: formData.items,
+      subtotal: calculateSubtotal(),
+      vat: calculateVAT(),
+      total: calculateTotal(),
+      notes: formData.notes,
+    };
+
+    // Save to sessionStorage
+    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]');
+    invoices.push(invoice);
+    sessionStorage.setItem('invoices', JSON.stringify(invoices));
+
+    // Reset form
+    setFormData({
+      clientName: '',
+      clientAddress: '',
+      clientICE: '',
+      dueDate: '',
+      notes: '',
+      discount: 0,
+      items: [
+        {
+          description: '',
+          quantity: 1,
+          unitPrice: 0,
+          taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
+            ? (settings.vatRate || 0.2) 
+            : 0,
+          discount: 0,
+        },
+      ],
+    });
+    setShowPreview(false);
+    alert('Invoice saved successfully!');
+  };
+
+  // Display number for preview
+  const getDisplayNumber = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const padded = String(nextNumber).padStart(settings.zeroPadding || 4, '0');
+    return `${settings.numberingPrefix || 'INV'}-${year}-${padded}`;
+  };
+
+  // Preview mode
+  if (showPreview) {
+    const now = new Date();
+    const displayNumber = getDisplayNumber();
+
+    return (
+      <div className="flex-1 overflow-auto p-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-8" ref={previewRef}>
+            <h2 className="text-3xl font-bold text-center text-neutral-900 dark:text-neutral-100 mb-8">
+              INVOICE
+            </h2>
+
+            {/* Header */}
+            <div className="flex justify-between mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-700">
+              <div>
+                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 mb-2">Seller</h3>
+                {settings.logoDataUrl && (
+                  <img src={settings.logoDataUrl} alt="logo" className="h-10 mb-2" />
+                )}
+                <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                  {settings.companyName || 'Your Company'}
+                </p>
+                <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
+                  {settings.companyAddress || 'Your Address'}
+                </p>
+                <p className="text-neutral-700 dark:text-neutral-300">
+                  ICE: {settings.companyICE || 'Your ICE'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-neutral-900 dark:text-neutral-100">
+                  Invoice № {displayNumber}
+                </p>
+                <p className="text-neutral-700 dark:text-neutral-300">
+                  Date: {now.toLocaleDateString()}
+                </p>
+                {formData.dueDate && (
+                  <p className="text-neutral-700 dark:text-neutral-300">
+                    Due Date: {new Date(formData.dueDate).toLocaleDateString()}
+                  </p>
+                )}
+                <p className="text-neutral-700 dark:text-neutral-300">Currency: {currency}</p>
+              </div>
+            </div>
+
+            {/* Buyer */}
+            <div className="mb-8">
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 mb-2">Buyer</h3>
+              <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                {formData.clientName}
+              </p>
+              <p className="text-neutral-700 dark:text-neutral-300">{formData.clientAddress}</p>
+              <p className="text-neutral-700 dark:text-neutral-300">ICE: {formData.clientICE}</p>
+            </div>
+
+            {/* Items Table */}
+            <table className="w-full mb-8">
+              <thead className="bg-neutral-50 dark:bg-neutral-800">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Description
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Qty
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Unit Price ({currency})
+                  </th>
+                  {settings.vatMode === 'per-item' && settings.vatEnabled && (
+                    <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      VAT %
+                    </th>
+                  )}
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Discount %
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Total ({currency})
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                {formData.items.map((item, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-3 text-neutral-900 dark:text-neutral-100">
+                      {item.description}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                      {item.quantity}
+                    </td>
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                      {Number(item.unitPrice).toFixed(2)}
+                    </td>
+                    {settings.vatMode === 'per-item' && settings.vatEnabled && (
+                      <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                        {Math.round((Number(item.taxRate) || 0) * 100)}%
+                      </td>
+                    )}
+                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                      {Number(item.discount || 0).toFixed(0)}%
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-neutral-900 dark:text-neutral-100">
+                      {calcItemTotal(item).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Totals */}
+            <div className="flex justify-end mb-8">
+              <div className="w-80">
+                <div className="flex justify-between py-2 text-neutral-700 dark:text-neutral-300">
+                  <span>Subtotal:</span>
+                  <span className="font-semibold">
+                    {calculateSubtotal().toFixed(2)} {currency}
+                  </span>
+                </div>
+                {settings.vatEnabled && (
+                  <div className="flex justify-between py-2 text-neutral-700 dark:text-neutral-300">
+                    <span>
+                      VAT{' '}
+                      {settings.vatMode !== 'per-item'
+                        ? `(${Math.round((settings.vatRate || 0.2) * 100)}%)`
+                        : ''}
+                      :
+                    </span>
+                    <span className="font-semibold">
+                      {calculateVAT().toFixed(2)} {currency}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between py-3 border-t border-neutral-200 dark:border-neutral-700 text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                  <span>Total:</span>
+                  <span>
+                    {calculateTotal().toFixed(2)} {currency}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {formData.notes && (
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4">
+                <h5 className="font-bold text-neutral-900 dark:text-neutral-100 mb-2">Notes:</h5>
+                <p className="text-neutral-700 dark:text-neutral-300">{formData.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 mt-6">
+            <button
+              onClick={() => setShowPreview(false)}
+              className="flex items-center gap-2 px-6 py-2 bg-neutral-500 hover:bg-neutral-600 text-white rounded-lg transition-colors"
+            >
+              <IconX className="h-5 w-5" />
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            >
+              <IconDeviceFloppy className="h-5 w-5" />
+              Save Invoice
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Form view
   return (
-    <h1 className="m-4 text-2xl font-bold">Invoice Form Page</h1>
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <IconFileInvoice className="h-8 w-8 text-neutral-700 dark:text-neutral-200" />
+            <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100">
+              Create New Invoice
+            </h1>
+          </div>
+          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+            Invoice № {String(nextNumber).padStart(settings.zeroPadding || 4, '0')}
+          </p>
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setShowPreview(true);
+          }}
+        >
+          {/* Client Information */}
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <IconUser className="h-6 w-6 text-neutral-700 dark:text-neutral-200" />
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-100">
+                Client Information
+              </h2>
+            </div>
+
+            {/* Client Picker */}
+            {clients.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Choose Existing Client
+                </label>
+                <select
+                  onChange={(e) => pickClient(e.target.value)}
+                  defaultValue=""
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="" disabled>
+                    Select a client...
+                  </option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Client Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientAddress}
+                  onChange={(e) => setFormData({ ...formData, clientAddress: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  ICE Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientICE}
+                  onChange={(e) => setFormData({ ...formData, clientICE: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Line Items */}
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
+            <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
+              Items / Services
+            </h2>
+
+            <div className="space-y-4">
+              {formData.items.map((item, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
+                >
+                  <div className="md:col-span-4">
+                    <input
+                      type="text"
+                      placeholder="Description"
+                      required
+                      value={item.description}
+                      onChange={(e) => updateItem(index, 'description', e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <input
+                      type="number"
+                      placeholder="Qty"
+                      required
+                      min="1"
+                      value={(item.quantity ?? 1).toString()}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        const qty = isNaN(value) ? 1 : Math.max(1, value);
+                        updateItem(index, 'quantity', qty);
+                      }}
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <input
+                      type="number"
+                      placeholder="Unit Price"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={(item.unitPrice ?? 0).toString()}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        const price = isNaN(value) ? 0 : Math.max(0, value);
+                        updateItem(index, 'unitPrice', price);
+                      }}
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {settings.vatMode === 'per-item' && settings.vatEnabled && (
+                    <div className="md:col-span-2">
+                      <input
+                        type="number"
+                        placeholder="VAT %"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={(Math.round((Number(item.taxRate) || 0) * 100 * 10) / 10).toString()}
+                        onChange={(e) => {
+                          const percent = parseFloat(e.target.value);
+                          const rate = isNaN(percent) ? 0 : Math.max(0, Math.min(100, percent)) / 100;
+                          updateItem(index, 'taxRate', rate);
+                        }}
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
+
+                  <div className="md:col-span-2">
+                    <div className="flex items-center gap-2 h-full">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                        {calcItemTotal(item).toFixed(2)} {currency}
+                      </span>
+                      {formData.items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Remove item"
+                        >
+                          <IconTrash className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={addItem}
+              className="flex items-center gap-2 mt-4 px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg transition-colors"
+            >
+              <IconPlus className="h-5 w-5" />
+              Add Item
+            </button>
+          </div>
+
+          {/* Additional Details */}
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Global Discount (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={(formData.discount ?? 0).toString()}
+                  onChange={(e) => {
+                    const percent = parseFloat(e.target.value);
+                    const discount = isNaN(percent) ? 0 : Math.max(0, Math.min(100, percent));
+                    setFormData({ ...formData, discount });
+                  }}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Notes
+                </label>
+                <textarea
+                  rows="3"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Totals Summary */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-6 mb-6">
+            <div className="space-y-3">
+              <div className="flex justify-between text-neutral-700 dark:text-neutral-300">
+                <span>Subtotal:</span>
+                <strong className="text-neutral-900 dark:text-neutral-100">
+                  {calculateSubtotal().toFixed(2)} {currency}
+                </strong>
+              </div>
+              <div className="flex justify-between text-neutral-700 dark:text-neutral-300">
+                <span>VAT:</span>
+                <strong className="text-neutral-900 dark:text-neutral-100">
+                  {calculateVAT().toFixed(2)} {currency}
+                </strong>
+              </div>
+              <div className="flex justify-between text-xl font-bold text-blue-600 dark:text-blue-400 pt-3 border-t-2 border-blue-300 dark:border-blue-600">
+                <span>Total:</span>
+                <span>
+                  {calculateTotal().toFixed(2)} {currency}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium rounded-lg transition-colors"
+            >
+              <IconEye className="h-6 w-6" />
+              Preview Invoice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

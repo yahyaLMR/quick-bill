@@ -12,6 +12,33 @@ import {
   IconSearch,
 } from '@tabler/icons-react';
 
+/**
+ * Invoices Component
+ * 
+ * Purpose: Display and manage invoice list with advanced filtering and actions
+ * Storage: SessionStorage (key: 'invoices')
+ * Created by: InvoiceForm component
+ * 
+ * Features:
+ * - Filter by status (paid, pending, overdue, all)
+ * - Search by client name or invoice number
+ * - Sort by date, total, status
+ * - View invoice details in modal
+ * - Edit invoice information
+ * - Duplicate existing invoices
+ * - Delete invoices
+ * - Export to CSV
+ * - Statistics dashboard (total, paid, pending, overdue)
+ * 
+ * Invoice Data Structure:
+ * {
+ *   id, number, displayNumber, date, dueDate,
+ *   clientName, clientAddress, clientICE,
+ *   status ('paid' | 'pending' | 'overdue'),
+ *   items: [{ description, quantity, unitPrice, taxRate, discount }],
+ *   subtotal, vat, total, notes
+ * }
+ */
 const Invoices = () => {
   // Load invoices from sessionStorage
   const [invoices, setInvoices] = useState(() => {
@@ -105,7 +132,11 @@ const Invoices = () => {
     sessionStorage.setItem('invoices', JSON.stringify(invoices));
   }, [invoices]);
 
-  // Filtered and sorted invoices
+  // ============================================
+  // FILTERING & SORTING LOGIC
+  // ============================================
+  // Uses useMemo for performance optimization
+  // Recalculates only when dependencies change
   const filteredInvoices = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
