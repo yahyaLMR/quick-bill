@@ -213,8 +213,7 @@ const InvoiceForm = () => {
     const now = new Date();
     const invoice = {
       id: nextNumber,
-      number: `INV-${String(nextNumber).padStart(3, '0')}`,
-      displayNumber: `${settings.numberingPrefix || 'INV'}-${now.getFullYear()}-${String(nextNumber).padStart(settings.zeroPadding || 4, '0')}`,
+      number: `FAC-${now.getFullYear()}-${String(nextNumber).padStart(3, '0')}`,
       date: now.toISOString().split('T')[0],
       dueDate: formData.dueDate,
       clientName: formData.clientName,
@@ -261,8 +260,8 @@ const InvoiceForm = () => {
   const getDisplayNumber = () => {
     const now = new Date();
     const year = now.getFullYear();
-    const padded = String(nextNumber).padStart(settings.zeroPadding || 4, '0');
-    return `${settings.numberingPrefix || 'INV'}-${year}-${padded}`;
+    const padded = String(nextNumber).padStart(3, '0');
+    return `FAC-${year}-${padded}`;
   };
 
   // Preview mode

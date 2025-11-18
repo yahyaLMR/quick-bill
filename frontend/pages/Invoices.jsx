@@ -32,7 +32,7 @@ import {
  * 
  * Invoice Data Structure:
  * {
- *   id, number, displayNumber, date, dueDate,
+ *   id, number, date, dueDate,
  *   clientName, clientAddress, clientICE,
  *   status ('paid' | 'pending' | 'overdue'),
  *   items: [{ description, quantity, unitPrice, taxRate, discount }],
@@ -50,8 +50,7 @@ const Invoices = () => {
     return [
       {
         id: 1,
-        number: 'INV-001',
-        displayNumber: 'FAC-2024-001',
+        number: 'FAC-2024-001',
         date: '2024-01-15',
         dueDate: '2024-02-15',
         clientName: 'John Doe',
@@ -69,8 +68,7 @@ const Invoices = () => {
       },
       {
         id: 2,
-        number: 'INV-002',
-        displayNumber: 'FAC-2024-002',
+        number: 'FAC-2024-002',
         date: '2024-02-10',
         dueDate: '2024-03-10',
         clientName: 'Jane Smith',
@@ -88,8 +86,7 @@ const Invoices = () => {
       },
       {
         id: 3,
-        number: 'INV-003',
-        displayNumber: 'FAC-2024-003',
+        number: 'FAC-2024-003',
         date: '2023-12-20',
         dueDate: '2024-01-20',
         clientName: 'Bob Johnson',
@@ -165,7 +162,7 @@ const Invoices = () => {
       list = list.filter(
         (inv) =>
           (inv.clientName || '').toLowerCase().includes(q) ||
-          (inv.displayNumber || String(inv.number)).toLowerCase().includes(q)
+          (inv.number || '').toLowerCase().includes(q)
       );
     }
 
@@ -207,11 +204,13 @@ const Invoices = () => {
   const handleDuplicate = (id) => {
     const invoice = invoices.find((inv) => inv.id === id);
     if (invoice) {
+      const newId = Math.max(...invoices.map((i) => i.id)) + 1;
+      const currentYear = new Date().getFullYear();
+      const invoiceNumber = `FAC-${currentYear}-${String(newId).padStart(3, '0')}`;
       const newInvoice = {
         ...invoice,
-        id: Math.max(...invoices.map((i) => i.id)) + 1,
-        number: `INV-${String(Math.max(...invoices.map((i) => i.id)) + 1).padStart(3, '0')}`,
-        displayNumber: `FAC-2024-${String(Math.max(...invoices.map((i) => i.id)) + 1).padStart(3, '0')}`,
+        id: newId,
+        number: invoiceNumber,
         date: new Date().toISOString().split('T')[0],
         status: 'pending',
       };
@@ -228,7 +227,7 @@ const Invoices = () => {
   const exportToCSV = () => {
     const headers = ['Number', 'Date', 'Client', 'Status', `Amount (${currency})`];
     const rows = filteredInvoices.map((inv) => [
-      inv.displayNumber || inv.number,
+      inv.number,
       new Date(inv.date).toLocaleDateString(),
       inv.clientName,
       inv.status || 'pending',
@@ -424,7 +423,7 @@ const Invoices = () => {
                       className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        #{invoice.displayNumber || invoice.number}
+                        #{invoice.number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300">
                         {new Date(invoice.date).toLocaleDateString('fr-FR')}
@@ -536,7 +535,7 @@ const Invoices = () => {
             >
               <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 p-6 flex justify-between items-center">
                 <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                  Invoice #{viewInvoice.displayNumber || viewInvoice.number}
+                  Invoice #{viewInvoice.number}
                 </h3>
                 <button
                   onClick={() => setViewInvoice(null)}
@@ -683,7 +682,7 @@ const Invoices = () => {
             >
               <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 p-6 flex justify-between items-center">
                 <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                  Edit Invoice #{editInvoice.displayNumber || editInvoice.number}
+                  Edit Invoice #{editInvoice.number}
                 </h3>
                 <button
                   onClick={() => setEditInvoice(null)}
