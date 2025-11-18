@@ -21,14 +21,13 @@ import {
  * 
  * Features:
  * - Dynamic line items with add/remove
- * - Two VAT modes: global (single rate) or per-item (individual rates)
- * - Discount support (per item and global)
+ * - Global VAT rate applied to subtotal
+ * - Discount support (global)
  * - Live preview before saving
  * - Auto-numbered invoices based on settings
  * 
- * VAT Calculation Modes:
- * 1. Global Mode: Apply single VAT rate to subtotal after discount
- * 2. Per-Item Mode: Each item has its own VAT rate, aggregated after discount
+ * VAT Calculation:
+ * - Apply single VAT rate to subtotal after discount
  */
 const InvoiceForm = () => {
   // Load settings and clients from sessionStorage with proper defaults
@@ -36,7 +35,6 @@ const InvoiceForm = () => {
   const settings = savedSettings ? JSON.parse(savedSettings) : {
     vatEnabled: true,
     vatRate: 0.2,
-    vatMode: 'global',
     currency: 'DH',
     numberingPrefix: 'INV',
     zeroPadding: 4,
@@ -64,10 +62,6 @@ const InvoiceForm = () => {
         description: '',
         quantity: 1,
         unitPrice: 0,
-        taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
-          ? (settings.vatRate || 0.2) 
-          : 0,
-        discount: 0,
       },
     ],
   });
@@ -99,10 +93,6 @@ const InvoiceForm = () => {
           description: '',
           quantity: 1,
           unitPrice: 0,
-          taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
-            ? (settings.vatRate || 0.2) 
-            : 0,
-          discount: 0,
         },
       ],
     });
@@ -124,61 +114,18 @@ const InvoiceForm = () => {
   // ============================================
   
   /**
-   * Calculate item base amount after per-item discount
-   * Used in per-item VAT mode calculations
-   */
-  const itemBaseAfterItemDiscount = (item) => {
-    const base = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
-    const afterItemDiscount = base * (1 - (Number(item.discount) || 0) / 100);
-    return afterItemDiscount;
-  };
-
-  /**
    * Calculate total for a single line item
-   * Behavior depends on VAT mode from settings
+   * Returns quantity × unit price
    */
   const calcItemTotal = (item) => {
-    if (settings.vatMode === 'per-item') {
-      // Per-item mode: Include individual VAT in item total
-      const base = itemBaseAfterItemDiscount(item);
-      const tax = settings.vatEnabled ? base * (Number(item.taxRate) || 0) : 0;
-      return base + tax;
-    }
-    // Global mode: Just quantity × price (VAT added at subtotal level)
     return (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
   };
 
   /**
-   * Calculate aggregated bases for per-item VAT mode
-   * Returns subtotal and tax after applying global discount
-   */
-  const calculatePerItemBases = () => {
-    // Sum all item bases after their individual discounts
-    const baseSum = formData.items.reduce((sum, it) => sum + itemBaseAfterItemDiscount(it), 0);
-    
-    // Sum all individual VAT amounts
-    const taxSum = settings.vatEnabled
-      ? formData.items.reduce(
-          (sum, it) => sum + itemBaseAfterItemDiscount(it) * (Number(it.taxRate) || 0),
-          0
-        )
-      : 0;
-    
-    // Apply global discount to both base and tax
-    const globalFactor = 1 - (Number(formData.discount) || 0) / 100;
-    return { discountedBase: baseSum * globalFactor, discountedTax: taxSum * globalFactor };
-  };
-
-  /**
    * Calculate invoice subtotal (before VAT)
-   * Accounts for VAT mode and global discount
+   * Sum all items, then apply global discount
    */
   const calculateSubtotal = () => {
-    if (settings.vatMode === 'per-item') {
-      // Per-item mode: Use pre-calculated discounted base
-      return calculatePerItemBases().discountedBase;
-    }
-    // Global mode: Sum items, then apply global discount
     const base = formData.items.reduce(
       (sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
       0
@@ -189,17 +136,10 @@ const InvoiceForm = () => {
 
   /**
    * Calculate total VAT amount
-   * Behavior depends on VAT mode from settings
+   * Apply global VAT rate to subtotal
    */
   const calculateVAT = () => {
     if (!settings.vatEnabled) return 0;
-    
-    if (settings.vatMode === 'per-item') {
-      // Per-item mode: Use pre-calculated discounted tax
-      return calculatePerItemBases().discountedTax;
-    }
-    
-    // Global mode: Apply single rate to subtotal
     const rate = Number(settings.vatRate || 0.2);
     return calculateSubtotal() * rate;
   };
@@ -245,10 +185,6 @@ const InvoiceForm = () => {
           description: '',
           quantity: 1,
           unitPrice: 0,
-          taxRate: settings.vatMode === 'per-item' && settings.vatEnabled 
-            ? (settings.vatRate || 0.2) 
-            : 0,
-          discount: 0,
         },
       ],
     });
@@ -333,14 +269,6 @@ const InvoiceForm = () => {
                   <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Unit Price ({currency})
                   </th>
-                  {settings.vatMode === 'per-item' && settings.vatEnabled && (
-                    <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      VAT %
-                    </th>
-                  )}
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Discount %
-                  </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Total ({currency})
                   </th>
@@ -357,14 +285,6 @@ const InvoiceForm = () => {
                     </td>
                     <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
                       {Number(item.unitPrice).toFixed(2)}
-                    </td>
-                    {settings.vatMode === 'per-item' && settings.vatEnabled && (
-                      <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
-                        {Math.round((Number(item.taxRate) || 0) * 100)}%
-                      </td>
-                    )}
-                    <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
-                      {Number(item.discount || 0).toFixed(0)}%
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-neutral-900 dark:text-neutral-100">
                       {calcItemTotal(item).toFixed(2)}
@@ -386,11 +306,7 @@ const InvoiceForm = () => {
                 {settings.vatEnabled && (
                   <div className="flex justify-between py-2 text-neutral-700 dark:text-neutral-300">
                     <span>
-                      VAT{' '}
-                      {settings.vatMode !== 'per-item'
-                        ? `(${Math.round((settings.vatRate || 0.2) * 100)}%)`
-                        : ''}
-                      :
+                      VAT ({Math.round((settings.vatRate || 0.2) * 100)}%):
                     </span>
                     <span className="font-semibold">
                       {calculateVAT().toFixed(2)} {currency}
@@ -600,26 +516,7 @@ const InvoiceForm = () => {
                     />
                   </div>
 
-                  {settings.vatMode === 'per-item' && settings.vatEnabled && (
-                    <div className="md:col-span-2">
-                      <input
-                        type="number"
-                        placeholder="VAT %"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={(Math.round((Number(item.taxRate) || 0) * 100 * 10) / 10).toString()}
-                        onChange={(e) => {
-                          const percent = parseFloat(e.target.value);
-                          const rate = isNaN(percent) ? 0 : Math.max(0, Math.min(100, percent)) / 100;
-                          updateItem(index, 'taxRate', rate);
-                        }}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  )}
-
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-4">
                     <div className="flex items-center gap-2 h-full">
                       <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                         {calcItemTotal(item).toFixed(2)} {currency}

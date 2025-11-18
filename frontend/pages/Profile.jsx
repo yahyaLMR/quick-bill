@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   IconUser,
   IconMail,
@@ -9,21 +9,21 @@ import {
   IconCheck,
   IconX,
   IconCamera,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 
 /**
  * Profile Component
- * 
+ *
  * Purpose: Manage user profile information with edit mode
  * Storage: SessionStorage (key: 'userProfile')
- * 
+ *
  * Features:
  * - View/Edit mode toggle
  * - Avatar with hover effect
  * - Personal information (name, email, phone, bio)
  * - Company information (name, role, location)
  * - Quick stats display
- * 
+ *
  * Data Structure:
  * {
  *   name, email, phone, bio, avatar,
@@ -34,29 +34,29 @@ import {
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(() => {
-    const saved = sessionStorage.getItem('userProfile');
+    const saved = sessionStorage.getItem("userProfile");
     if (saved) {
       return JSON.parse(saved);
     }
     return {
-      name: 'Manu Arora',
-      email: 'manu@quickbill.com',
-      phone: '+1 (555) 123-4567',
+      name: "Manu Arora",
+      email: "manu@quickbill.com",
+      phone: "+1 (555) 123-4567",
       company: {
-        name:'Quick Bill Inc.',
-        ICE:"ICE378249849875",
-        address:'123 Business Ave, City, Country',
+        name: "Quick Bill Inc.",
+        ICE: "ICE378249849875",
+        address: "123 Business Ave, City, Country",
       },
-      position: 'CEO & Founder',
-      bio: 'Passionate about simplifying invoicing and helping businesses grow.',
-      avatar: 'https://assets.aceternity.com/manu.png',
+      position: "CEO & Founder",
+      bio: "Passionate about simplifying invoicing and helping businesses grow.",
+      avatar: "https://assets.aceternity.com/manu.png",
     };
   });
 
   const [editData, setEditData] = useState(profileData);
 
   useEffect(() => {
-    sessionStorage.setItem('userProfile', JSON.stringify(profileData));
+    sessionStorage.setItem("userProfile", JSON.stringify(profileData));
   }, [profileData]);
 
   const handleEdit = () => {
@@ -164,7 +164,10 @@ const Profile = () => {
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                      {JSON.parse(sessionStorage.getItem('invoices')).length}
+                        {sessionStorage.getItem("invoices")
+                          ? JSON.parse(sessionStorage.getItem("invoices"))
+                              .length
+                          : 0}
                       </div>
                       <div className="text-xs text-neutral-600 dark:text-neutral-400">
                         Invoices
@@ -172,7 +175,9 @@ const Profile = () => {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {JSON.parse(sessionStorage.getItem('clients')).length}
+                        {sessionStorage.getItem("clients")
+                          ? JSON.parse(sessionStorage.getItem("clients")).length
+                          : 0}
                       </div>
                       <div className="text-xs text-neutral-600 dark:text-neutral-400">
                         Clients
@@ -203,7 +208,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -223,7 +230,9 @@ const Profile = () => {
                     <input
                       type="email"
                       value={editData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -243,7 +252,9 @@ const Profile = () => {
                     <input
                       type="tel"
                       value={editData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -263,7 +274,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("address", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -292,7 +305,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.company.name}
-                      onChange={(e) => handleCompanyInputChange('name', e.target.value)}
+                      onChange={(e) =>
+                        handleCompanyInputChange("name", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -312,7 +327,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.company.ICE}
-                      onChange={(e) => handleCompanyInputChange('ICE', e.target.value)}
+                      onChange={(e) =>
+                        handleCompanyInputChange("ICE", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -332,7 +349,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.company.address}
-                      onChange={(e) => handleCompanyInputChange('address', e.target.value)}
+                      onChange={(e) =>
+                        handleCompanyInputChange("address", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -352,7 +371,9 @@ const Profile = () => {
                     <input
                       type="text"
                       value={editData.position}
-                      onChange={(e) => handleInputChange('position', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("position", e.target.value)
+                      }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
@@ -373,7 +394,7 @@ const Profile = () => {
               {isEditing ? (
                 <textarea
                   value={editData.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  onChange={(e) => handleInputChange("bio", e.target.value)}
                   rows={4}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

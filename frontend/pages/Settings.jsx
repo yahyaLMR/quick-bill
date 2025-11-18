@@ -19,7 +19,7 @@ import {
  * 
  * Configuration Sections:
  * 1. Company Information - Name, address, ICE, logo (appears on invoices)
- * 2. VAT Configuration - Enable/disable, rate, mode (global vs per-item)
+ * 2. VAT Configuration - Enable/disable, global rate
  * 3. Currency - Symbol used throughout the application
  * 4. Invoice Numbering - Prefix, zero padding, yearly reset
  * 5. Business Type - Services/Commerce with monthly caps
@@ -27,7 +27,7 @@ import {
  * Data Structure:
  * {
  *   companyName, companyAddress, companyICE, logoDataUrl,
- *   vatEnabled, vatRate (decimal 0-1), vatMode ('global' | 'per-item'),
+ *   vatEnabled, vatRate (decimal 0-1),
  *   currency, numberingPrefix, zeroPadding, resetNumberYearly,
  *   businessType, monthlyCap
  * }
@@ -48,7 +48,6 @@ const Settings = () => {
       logoDataUrl: '',
       vatEnabled: true,
       vatRate: 0.2, // 20%
-      vatMode: 'global', // 'global' or 'per-item'
       currency: 'DH',
       numberingPrefix: 'INV',
       zeroPadding: 4,
@@ -277,21 +276,9 @@ const Settings = () => {
                   }}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
-
-              {/* VAT Mode */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  VAT Mode
-                </label>
-                <select
-                  value={settings.vatMode}
-                  onChange={(e) => handleChange({ vatMode: e.target.value })}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="global">Global (single rate)</option>
-                  <option value="per-item">Per Item (VAT per line)</option>
-                </select>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  This rate will be applied globally to all invoices
+                </p>
               </div>
             </div>
           </div>
