@@ -1,0 +1,18 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+export default function LandingPage() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900">
+      <h1 className="mb-8 text-4xl font-bold text-neutral-800 dark:text-neutral-200">Welcome to Quick Bill</h1>
+      <div className="flex gap-4">
+        <Link to="/login" className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+          Login
+        </Link>
+        <Link to="/register" className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700">
+          Register
+        </Link>
+      </div>
+    </div>
+  );
+}
