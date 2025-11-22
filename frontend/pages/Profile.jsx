@@ -42,11 +42,10 @@ const Profile = () => {
       name: "Manu Arora",
       email: "manu@quickbill.com",
       phone: "+1 (555) 123-4567",
-      company: {
-        name: "Quick Bill Inc.",
-        ICE: "ICE378249849875",
-        address: "123 Business Ave, City, Country",
-      },
+      address: "123 Main St, City, Country",
+      companyname: "Quick Bill Inc.",
+      companyICE: "123456789",
+      companyAddress: "456 Business Rd, Business City",
       position: "CEO & Founder",
       bio: "Passionate about simplifying invoicing and helping businesses grow.",
       avatar: "https://assets.aceternity.com/manu.png",
@@ -76,13 +75,6 @@ const Profile = () => {
 
   const handleInputChange = (field, value) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleCompanyInputChange = (field, value) => {
-    setEditData((prev) => ({
-      ...prev,
-      company: { ...prev.company, [field]: value },
-    }));
   };
 
   return (
@@ -155,7 +147,7 @@ const Profile = () => {
                     {profileData.position}
                   </p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
-                    {profileData.company.name}
+                    {profileData.companyname}
                   </p>
                 </div>
 
@@ -304,15 +296,15 @@ const Profile = () => {
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editData.company.name}
+                      value={editData.companyname}
                       onChange={(e) =>
-                        handleCompanyInputChange("name", e.target.value)
+                        handleInputChange("companyname", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
                     <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.company.name}
+                      {profileData.companyname}
                     </p>
                   )}
                 </div>
@@ -326,15 +318,15 @@ const Profile = () => {
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editData.company.ICE}
+                      value={editData.companyICE}
                       onChange={(e) =>
-                        handleCompanyInputChange("ICE", e.target.value)
+                        handleInputChange("companyICE", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
                     <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.company.ICE}
+                      {profileData.companyICE}
                     </p>
                   )}
                 </div>
@@ -348,15 +340,15 @@ const Profile = () => {
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editData.company.address}
+                      value={editData.companyAddress}
                       onChange={(e) =>
-                        handleCompanyInputChange("address", e.target.value)
+                        handleInputChange("companyAddress", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   ) : (
                     <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.company.address}
+                      {profileData.companyAddress}
                     </p>
                   )}
                 </div>
