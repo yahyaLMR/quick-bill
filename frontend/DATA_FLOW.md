@@ -112,13 +112,8 @@ App (Router)
   name: string,
   email: string,
   phone: string,
-  address: string,
   bio: string,
   avatar: string, // URL or Base64
-  
-  companyname: string,
-  companyICE: string,
-  companyAddress: string
 }
 ```
 

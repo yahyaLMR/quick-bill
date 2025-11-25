@@ -3,8 +3,6 @@ import {
   IconUser,
   IconMail,
   IconPhone,
-  IconMapPin,
-  IconBuilding,
   IconEdit,
   IconCheck,
   IconX,
@@ -42,10 +40,6 @@ const Profile = () => {
       name: "Manu Arora",
       email: "manu@quickbill.com",
       phone: "+1 (555) 123-4567",
-      address: "123 Main St, City, Country",
-      companyname: "Quick Bill Inc.",
-      companyICE: "123456789",
-      companyAddress: "456 Business Rd, Business City",
       bio: "Passionate about simplifying invoicing and helping businesses grow.",
       avatar: "https://assets.aceternity.com/manu.png",
     };
@@ -142,9 +136,6 @@ const Profile = () => {
                   <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {profileData.name}
                   </h2>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
-                    {profileData.companyname}
-                  </p>
                 </div>
 
                 {/* Quick Stats */}
@@ -248,103 +239,6 @@ const Profile = () => {
                   ) : (
                     <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
                       {profileData.phone}
-                    </p>
-                  )}
-                </div>
-
-                {/* Address */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    <IconMapPin className="h-4 w-4" />
-                    Address
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.address}
-                      onChange={(e) =>
-                        handleInputChange("address", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.address}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Professional Information */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6">
-              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-                Professional Information
-              </h3>
-
-              <div className="space-y-4">
-                {/* Company */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    <IconBuilding className="h-4 w-4" />
-                    Company Name
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.companyname}
-                      onChange={(e) =>
-                        handleInputChange("companyname", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.companyname}
-                    </p>
-                  )}
-                </div>
-
-                {/* Company ICE */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    <IconBuilding className="h-4 w-4" />
-                    Company ICE
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.companyICE}
-                      onChange={(e) =>
-                        handleInputChange("companyICE", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.companyICE}
-                    </p>
-                  )}
-                </div>
-
-                {/* Company Address */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    <IconMapPin className="h-4 w-4" />
-                    Company Address
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.companyAddress}
-                      onChange={(e) =>
-                        handleInputChange("companyAddress", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.companyAddress}
                     </p>
                   )}
                 </div>
