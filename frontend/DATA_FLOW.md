@@ -112,20 +112,13 @@ App (Router)
   name: string,
   email: string,
   phone: string,
+  address: string,
   bio: string,
   avatar: string, // URL or Base64
   
-  company: {
-    name: string,
-    role: string,
-    location: string
-  },
-  
-  stats: {
-    clients: number,
-    invoices: number,
-    revenue: number
-  }
+  companyname: string,
+  companyICE: string,
+  companyAddress: string
 }
 ```
 

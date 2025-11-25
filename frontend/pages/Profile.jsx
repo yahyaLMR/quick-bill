@@ -46,7 +46,6 @@ const Profile = () => {
       companyname: "Quick Bill Inc.",
       companyICE: "123456789",
       companyAddress: "456 Business Rd, Business City",
-      position: "CEO & Founder",
       bio: "Passionate about simplifying invoicing and helping businesses grow.",
       avatar: "https://assets.aceternity.com/manu.png",
     };
@@ -138,14 +137,11 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Name & Position */}
+                {/* Name */}
                 <div className="mt-4 text-center">
                   <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {profileData.name}
                   </h2>
-                  <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-                    {profileData.position}
-                  </p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
                     {profileData.companyname}
                   </p>
@@ -349,28 +345,6 @@ const Profile = () => {
                   ) : (
                     <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
                       {profileData.companyAddress}
-                    </p>
-                  )}
-                </div>
-
-                {/* Position */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    <IconUser className="h-4 w-4" />
-                    Position
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editData.position}
-                      onChange={(e) =>
-                        handleInputChange("position", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
-                      {profileData.position}
                     </p>
                   )}
                 </div>
