@@ -24,8 +24,7 @@ import {
  *
  * Data Structure:
  * {
- *   name, email, phone, bio, avatar,
- *   company: { name, role, location },
+ *   name, email, phone, avatar,
  *   stats: { clients, invoices, revenue }
  * }
  */
@@ -40,7 +39,6 @@ const Profile = () => {
       name: "Manu Arora",
       email: "manu@quickbill.com",
       phone: "+1 (555) 123-4567",
-      bio: "Passionate about simplifying invoicing and helping businesses grow.",
       avatar: "https://assets.aceternity.com/manu.png",
     };
   });
@@ -243,26 +241,6 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-            </div>
-
-            {/* Bio */}
-            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6">
-              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-                Bio
-              </h3>
-
-              {isEditing ? (
-                <textarea
-                  value={editData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              ) : (
-                <p className="text-neutral-700 dark:text-neutral-300 px-4 py-2">
-                  {profileData.bio}
-                </p>
-              )}
             </div>
           </div>
         </div>
