@@ -1,4 +1,4 @@
-import React, { useState, useRef} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   IconSettings,
   IconBuilding,
@@ -8,6 +8,9 @@ import {
   IconHash,
   IconBriefcase,
   IconUpload,
+  IconEdit,
+  IconCheck,
+  IconX,
 } from '@tabler/icons-react';
 
 /**
@@ -34,6 +37,7 @@ import {
  */
 const Settings = () => {
   const fileInputRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Load settings from sessionStorage
   const [settings, setSettings] = useState(() => {
@@ -57,32 +61,32 @@ const Settings = () => {
     };
   });
 
-  const [originalSettings, setOriginalSettings] = useState(settings);
+  const [editSettings, setEditSettings] = useState(settings);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Check if there are unsaved changes
-  const hasChanges = JSON.stringify(settings) !== JSON.stringify(originalSettings);
+  useEffect(() => {
+    sessionStorage.setItem('appSettings', JSON.stringify(settings));
+  }, [settings]);
 
-  // ============================================
-  // SETTINGS MANAGEMENT
-  // ============================================
-  
-  // Update settings state (does not save until handleSave is called)
-  const handleChange = (updates) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+  const handleEdit = () => {
+    setEditSettings(settings);
+    setIsEditing(true);
   };
 
-  /**
-   * Save settings to sessionStorage
-   * Used by: InvoiceForm (VAT, currency, numbering)
-   *          Invoices (company info for previews)
-   * Button only enabled when hasChanges = true
-   */
+  const handleCancel = () => {
+    setEditSettings(settings);
+    setIsEditing(false);
+  };
+
   const handleSave = () => {
-    sessionStorage.setItem('appSettings', JSON.stringify(settings));
-    setOriginalSettings(settings);
+    setSettings(editSettings);
+    setIsEditing(false);
     setShowSuccessMessage(true);
     setTimeout(() => setShowSuccessMessage(false), 3000);
+  };
+
+  const handleChange = (updates) => {
+    setEditSettings((prev) => ({ ...prev, ...updates }));
   };
 
   // Handle logo file input -> base64 URL stored in settings
@@ -98,8 +102,9 @@ const Settings = () => {
   const sampleNumber = () => {
     const now = new Date();
     const year = now.getFullYear();
-    const padded = String(1).padStart(settings.zeroPadding || 4, '0');
-    return `${settings.numberingPrefix || 'INV'}-${year}-${padded}`;
+    const currentSettings = isEditing ? editSettings : settings;
+    const padded = String(1).padStart(currentSettings.zeroPadding || 4, '0');
+    return `${currentSettings.numberingPrefix || 'INV'}-${year}-${padded}`;
   };
 
   return (
@@ -119,17 +124,32 @@ const Settings = () => {
                 Configure your company information and invoice preferences
               </p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                hasChanges
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 cursor-not-allowed'
-              }`}
-            >
-              Update Settings
-            </button>
+            {!isEditing ? (
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                <IconEdit className="h-5 w-5" />
+                Edit Settings
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-500 hover:bg-neutral-600 text-white rounded-lg transition-colors"
+                >
+                  <IconX className="h-5 w-5" />
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  <IconCheck className="h-5 w-5" />
+                  Save Changes
+                </button>
+              </div>
+            )}
           </div>
           {showSuccessMessage && (
             <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
@@ -156,12 +176,18 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Company Name
                 </label>
-                <input
-                  type="text"
-                  value={settings.companyName}
-                  onChange={(e) => handleChange({ companyName: e.target.value })}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editSettings.companyName}
+                    onChange={(e) => handleChange({ companyName: e.target.value })}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {settings.companyName}
+                  </p>
+                )}
               </div>
 
               {/* Address */}
@@ -169,12 +195,18 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Address
                 </label>
-                <textarea
-                  value={settings.companyAddress}
-                  onChange={(e) => handleChange({ companyAddress: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <textarea
+                    value={editSettings.companyAddress}
+                    onChange={(e) => handleChange({ companyAddress: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2 whitespace-pre-wrap">
+                    {settings.companyAddress}
+                  </p>
+                )}
               </div>
 
               {/* ICE */}
@@ -182,12 +214,18 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   ICE Number
                 </label>
-                <input
-                  type="text"
-                  value={settings.companyICE}
-                  onChange={(e) => handleChange({ companyICE: e.target.value })}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editSettings.companyICE}
+                    onChange={(e) => handleChange({ companyICE: e.target.value })}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {settings.companyICE}
+                  </p>
+                )}
               </div>
 
               {/* Logo Upload */}
@@ -195,38 +233,54 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Company Logo
                 </label>
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg transition-colors"
-                  >
-                    <IconUpload className="h-5 w-5" />
-                    Upload Logo
-                  </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  {settings.logoDataUrl && (
-                    <div className="flex items-center gap-2">
+                {isEditing ? (
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg transition-colors"
+                    >
+                      <IconUpload className="h-5 w-5" />
+                      Upload Logo
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    {editSettings.logoDataUrl && (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={editSettings.logoDataUrl}
+                          alt="Company Logo"
+                          className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
+                        />
+                        <button
+                          onClick={() => handleChange({ logoDataUrl: '' })}
+                          className="text-sm text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-4 py-2">
+                    {settings.logoDataUrl ? (
                       <img
                         src={settings.logoDataUrl}
                         alt="Company Logo"
                         className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                       />
-                      <button
-                        onClick={() => handleChange({ logoDataUrl: '' })}
-                        className="text-sm text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <p className="text-neutral-500 dark:text-neutral-400 italic">
+                        No logo uploaded
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -243,19 +297,30 @@ const Settings = () => {
             <div className="space-y-4">
               {/* Enable VAT */}
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="vatEnabled"
-                  checked={settings.vatEnabled}
-                  onChange={(e) => handleChange({ vatEnabled: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-neutral-300 rounded"
-                />
-                <label
-                  htmlFor="vatEnabled"
-                  className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Enable VAT
-                </label>
+                {isEditing ? (
+                  <>
+                    <input
+                      type="checkbox"
+                      id="vatEnabled"
+                      checked={editSettings.vatEnabled}
+                      onChange={(e) => handleChange({ vatEnabled: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-neutral-300 rounded"
+                    />
+                    <label
+                      htmlFor="vatEnabled"
+                      className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Enable VAT
+                    </label>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${settings.vatEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <p className="text-neutral-900 dark:text-neutral-100">
+                      {settings.vatEnabled ? 'VAT Enabled' : 'VAT Disabled'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* VAT Rate */}
@@ -263,22 +328,30 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   VAT Rate (%)
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  value={((settings.vatRate ?? 0) * 100).toString()}
-                  onChange={(e) => {
-                    const percent = parseFloat(e.target.value);
-                    const rate = isNaN(percent) ? 0 : Math.max(0, Math.min(100, percent)) / 100;
-                    handleChange({ vatRate: rate });
-                  }}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  This rate will be applied globally to all invoices
-                </p>
+                {isEditing ? (
+                  <>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={((editSettings.vatRate ?? 0) * 100).toString()}
+                      onChange={(e) => {
+                        const percent = parseFloat(e.target.value);
+                        const rate = isNaN(percent) ? 0 : Math.max(0, Math.min(100, percent)) / 100;
+                        handleChange({ vatRate: rate });
+                      }}
+                      className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                      This rate will be applied globally to all invoices
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {((settings.vatRate ?? 0) * 100).toFixed(1)}%
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -296,13 +369,19 @@ const Settings = () => {
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 Currency Symbol
               </label>
-              <input
-                type="text"
-                value={settings.currency}
-                onChange={(e) => handleChange({ currency: e.target.value })}
-                placeholder="DH, $, €, etc."
-                className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editSettings.currency}
+                  onChange={(e) => handleChange({ currency: e.target.value })}
+                  placeholder="DH, $, €, etc."
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              ) : (
+                <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                  {settings.currency}
+                </p>
+              )}
             </div>
           </div>
 
@@ -321,13 +400,19 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Prefix
                 </label>
-                <input
-                  type="text"
-                  value={settings.numberingPrefix}
-                  onChange={(e) => handleChange({ numberingPrefix: e.target.value })}
-                  placeholder="INV, FAC, etc."
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editSettings.numberingPrefix}
+                    onChange={(e) => handleChange({ numberingPrefix: e.target.value })}
+                    placeholder="INV, FAC, etc."
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {settings.numberingPrefix}
+                  </p>
+                )}
               </div>
 
               {/* Zero Padding */}
@@ -335,35 +420,52 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Number Length (zero padding)
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={(settings.zeroPadding ?? 4).toString()}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    const padding = isNaN(value) ? 1 : Math.max(1, Math.min(8, value));
-                    handleChange({ zeroPadding: padding });
-                  }}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <input
+                    type="number"
+                    min="1"
+                    max="8"
+                    value={(editSettings.zeroPadding ?? 4).toString()}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      const padding = isNaN(value) ? 1 : Math.max(1, Math.min(8, value));
+                      handleChange({ zeroPadding: padding });
+                    }}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {settings.zeroPadding} digits
+                  </p>
+                )}
               </div>
 
               {/* Reset Yearly */}
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="resetYearly"
-                  checked={settings.resetNumberYearly}
-                  onChange={(e) => handleChange({ resetNumberYearly: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-neutral-300 rounded"
-                />
-                <label
-                  htmlFor="resetYearly"
-                  className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  Reset numbering yearly
-                </label>
+                {isEditing ? (
+                  <>
+                    <input
+                      type="checkbox"
+                      id="resetYearly"
+                      checked={editSettings.resetNumberYearly}
+                      onChange={(e) => handleChange({ resetNumberYearly: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-neutral-300 rounded"
+                    />
+                    <label
+                      htmlFor="resetYearly"
+                      className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                    >
+                      Reset numbering yearly
+                    </label>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${settings.resetNumberYearly ? 'bg-green-500' : 'bg-neutral-400'}`} />
+                    <p className="text-neutral-900 dark:text-neutral-100">
+                      {settings.resetNumberYearly ? 'Resets Yearly' : 'Continuous Numbering'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Sample Preview */}
@@ -393,33 +495,45 @@ const Settings = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   Business Type
                 </label>
-                <select
-                  value={settings.businessType}
-                  onChange={(e) => handleChange({ businessType: e.target.value })}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="services">Services (200k cap)</option>
-                  <option value="commerce">Commerce (500k cap)</option>
-                </select>
+                {isEditing ? (
+                  <select
+                    value={editSettings.businessType}
+                    onChange={(e) => handleChange({ businessType: e.target.value })}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="services">Services (200k cap)</option>
+                    <option value="commerce">Commerce (500k cap)</option>
+                  </select>
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2 capitalize">
+                    {settings.businessType}
+                  </p>
+                )}
               </div>
 
               {/* Monthly Cap */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Monthly Cap ({settings.currency})
+                  Monthly Cap ({isEditing ? editSettings.currency : settings.currency})
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={(settings.monthlyCap ?? 0).toString()}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    const cap = isNaN(value) ? 0 : Math.max(0, value);
-                    handleChange({ monthlyCap: cap });
-                  }}
-                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {isEditing ? (
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={(editSettings.monthlyCap ?? 0).toString()}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      const cap = isNaN(value) ? 0 : Math.max(0, value);
+                      handleChange({ monthlyCap: cap });
+                    }}
+                    className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-neutral-900 dark:text-neutral-100 px-4 py-2">
+                    {settings.monthlyCap?.toLocaleString()} {settings.currency}
+                  </p>
+                )}
               </div>
             </div>
           </div>
