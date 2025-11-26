@@ -12,7 +12,9 @@ connectDB();
 // Routes
 // const settingsRoutes = require('./routes/settingsRoutes');
 // const invoiceRoutes = require('./routes/invoiceRoutes');
-// const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/auth');
+
+app.use('/api/users', userRoutes);
 
 // app.use('/api/settings', settingsRoutes);
 // app.use('/api/invoices', invoiceRoutes);

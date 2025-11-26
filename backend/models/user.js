@@ -13,4 +13,4 @@ const userSchema = new Schema({
     invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
 });
 
-module.exports = mongoose.model('User', user);
+module.exports = mongoose.model('User', userSchema);
