@@ -68,7 +68,12 @@ export default function DashboardLayout() {
     },
   ];
   const [open, setOpen] = useState(false);
-
+const handlelogout = () => {
+  // Clear user session or token
+  localStorage.removeItem("token");
+  // Redirect to login page
+  window.location.href = "/login";
+}
   return (
     <div
       className={cn(
@@ -76,12 +81,12 @@ export default function DashboardLayout() {
         "h-screen",
       )}>
       <Sidebar open={open} setOpen={setOpen} >
-        <SidebarBody className="justify-between gap-10 border-r border-neutral-200 p-4 dark:border-neutral-700  bg-white p-4 dark:bg-neutral-900">
+        <SidebarBody className="justify-between gap-10 border-r border-neutral-200  dark:border-neutral-700  bg-white p-4 dark:bg-neutral-900">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <Link to={link.href} key={idx} >
+                <Link onClick={link.label === "Logout" ? handlelogout : undefined} to={link.href} key={idx} >
                   <SidebarLink key={idx} link={link} />
                 </Link>
               ))}

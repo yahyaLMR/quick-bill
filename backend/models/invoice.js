@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const invoiceSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     number: { type: String, required: true },
     date: { type: Date, required: true },
     dueDate: { type: Date },
