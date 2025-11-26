@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
+import api from "../src/lib/api";
 import { Link } from "react-router-dom";
 
 export default function Register() {
@@ -19,7 +19,7 @@ export default function Register() {
     };
     // Add your form submission logic here
     try {
-      const response = await axios.post("http://localhost:5000/api/users/register", formData);
+      const response = await api.post("/users/register", formData);
       console.log("Registration successful:", response.data);
       // Optionally, redirect to login page or show success message
     } catch (error) {

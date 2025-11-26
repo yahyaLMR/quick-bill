@@ -13,10 +13,12 @@ connectDB();
 const invoiceRoutes = require('./routes/invoices');
 const clientRoutes = require('./routes/clients');
 const userRoutes = require('./routes/auth');
+const settingsRoutes = require('./routes/settings');
 
 app.use('/api/users', userRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/clients', clientRoutes);
+app.use('/api/settings', settingsRoutes);
 
 
 app.listen(process.env.PORT || 5000, () => {

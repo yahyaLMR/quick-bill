@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import api from "../src/lib/api";
 import {
   IconUser,
   IconMail,
@@ -30,33 +31,50 @@ import {
  */
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(() => {
-    const saved = sessionStorage.getItem("userProfile");
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    return {
-      name: "Manu Arora",
-      email: "manu@quickbill.com",
-      phone: "+1 (555) 123-4567",
-      avatar: "https://assets.aceternity.com/manu.png",
-    };
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    avatar: "",
   });
+  const [stats, setStats] = useState({ invoices: 0, clients: 0 });
 
   const [editData, setEditData] = useState(profileData);
 
   useEffect(() => {
-    sessionStorage.setItem("userProfile", JSON.stringify(profileData));
-  }, [profileData]);
+    const fetchData = async () => {
+      try {
+        const [profileRes, invoicesRes, clientsRes] = await Promise.all([
+          api.get("/users/profile"),
+          api.get("/invoices"),
+          api.get("/clients"),
+        ]);
+        setProfileData(profileRes.data);
+        setEditData(profileRes.data);
+        setStats({
+          invoices: invoicesRes.data.length,
+          clients: clientsRes.data.length,
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleEdit = () => {
     setEditData(profileData);
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    setProfileData(editData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const response = await api.put("/users/profile", editData);
+      setProfileData(response.data);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -141,10 +159,7 @@ const Profile = () => {
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {sessionStorage.getItem("invoices")
-                          ? JSON.parse(sessionStorage.getItem("invoices"))
-                              .length
-                          : 0}
+                        {stats.invoices}
                       </div>
                       <div className="text-xs text-neutral-600 dark:text-neutral-400">
                         Invoices
@@ -152,9 +167,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                        {sessionStorage.getItem("clients")
-                          ? JSON.parse(sessionStorage.getItem("clients")).length
-                          : 0}
+                        {stats.clients}
                       </div>
                       <div className="text-xs text-neutral-600 dark:text-neutral-400">
                         Clients

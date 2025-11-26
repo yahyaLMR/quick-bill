@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import api from '../src/lib/api';
 import {
   IconSettings,
   IconBuilding,
@@ -39,34 +40,37 @@ const Settings = () => {
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Load settings from sessionStorage
-  const [settings, setSettings] = useState(() => {
-    const saved = sessionStorage.getItem('appSettings');
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    return {
-      companyName: 'Quick Bill Inc.',
-      companyAddress: '123 Business Ave\nCity, Country',
-      companyICE: 'ICE123456789',
-      logoDataUrl: '',
-      vatEnabled: true,
-      vatRate: 0.2, // 20%
-      currency: 'DH',
-      numberingPrefix: 'INV',
-      zeroPadding: 4,
-      resetNumberYearly: true,
-      businessType: 'services', // 'services' or 'commerce'
-      monthlyCap: 200000,
-    };
+  // Load settings from backend
+  const [settings, setSettings] = useState({
+    companyName: '',
+    companyAddress: '',
+    companyICE: '',
+    logoDataUrl: '',
+    vatEnabled: true,
+    vatRate: 0.2,
+    currency: 'DH',
+    numberingPrefix: 'INV',
+    zeroPadding: 4,
+    resetNumberYearly: true,
+    businessType: 'services',
+    monthlyCap: 200000,
   });
 
   const [editSettings, setEditSettings] = useState(settings);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
-    sessionStorage.setItem('appSettings', JSON.stringify(settings));
-  }, [settings]);
+    const fetchSettings = async () => {
+      try {
+        const response = await api.get('/settings');
+        setSettings(response.data);
+        setEditSettings(response.data);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleEdit = () => {
     setEditSettings(settings);
@@ -78,11 +82,16 @@ const Settings = () => {
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    setSettings(editSettings);
-    setIsEditing(false);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+  const handleSave = async () => {
+    try {
+      const response = await api.put('/settings', editSettings);
+      setSettings(response.data);
+      setIsEditing(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
   };
 
   const handleChange = (updates) => {

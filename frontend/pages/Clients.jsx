@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-react';
-import axios from 'axios';
+import api from '../src/lib/api';
 
 /**
  * Clients Component
@@ -23,7 +23,7 @@ const Clients = () => {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/clients');
+      const response = await api.get('/clients');
       setClients(response.data);
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -62,7 +62,7 @@ const Clients = () => {
       try {
         if (editingId) {
           // Update existing client
-          const response = await axios.put(`http://localhost:5000/api/clients/${editingId}`, formData);
+          const response = await api.put(`/clients/${editingId}`, formData);
           
           const updatedClient = response.data;
           setClients(prev => prev.map(client => 
@@ -71,7 +71,7 @@ const Clients = () => {
           setEditingId(null);
         } else {
           // Add new client
-          const response = await axios.post('http://localhost:5000/api/clients', formData);
+          const response = await api.post('/clients', formData);
           
           const newClient = response.data;
           setClients(prev => [...prev, newClient]);
@@ -97,7 +97,7 @@ const Clients = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this client?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/clients/${id}`);
+        await api.delete(`/clients/${id}`);
         setClients(prev => prev.filter(client => client._id !== id));
       } catch (error) {
         console.error('Error deleting client:', error);

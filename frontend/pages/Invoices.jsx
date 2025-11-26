@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import api from '../src/lib/api';
 import {
   IconFileInvoice,
   IconDownload,
@@ -40,69 +41,20 @@ import {
  * }
  */
 const Invoices = () => {
-  // Load invoices from sessionStorage
-  const [invoices, setInvoices] = useState(() => {
-    const saved = sessionStorage.getItem('invoices');
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    // Sample data
-    return [
-      {
-        id: 1,
-        number: 'FAC-2024-001',
-        date: '2024-01-15',
-        dueDate: '2024-02-15',
-        clientName: 'John Doe',
-        clientAddress: '123 Main St, New York',
-        clientICE: 'ICE001234567890',
-        status: 'paid',
-        items: [
-          { description: 'Web Development', quantity: 1, unitPrice: 5000 },
-          { description: 'SEO Optimization', quantity: 1, unitPrice: 2000 },
-        ],
-        subtotal: 7000,
-        vat: 1400,
-        total: 8400,
-        notes: 'Thank you for your business',
-      },
-      {
-        id: 2,
-        number: 'FAC-2024-002',
-        date: '2024-02-10',
-        dueDate: '2024-03-10',
-        clientName: 'Jane Smith',
-        clientAddress: '456 Oak Ave, Los Angeles',
-        clientICE: 'ICE002345678901',
-        status: 'pending',
-        items: [
-          { description: 'Mobile App Design', quantity: 1, unitPrice: 8000 },
-          { description: 'UI/UX Consultation', quantity: 2, unitPrice: 1500 },
-        ],
-        subtotal: 11000,
-        vat: 2200,
-        total: 13200,
-        notes: 'Payment due within 30 days',
-      },
-      {
-        id: 3,
-        number: 'FAC-2024-003',
-        date: '2023-12-20',
-        dueDate: '2024-01-20',
-        clientName: 'Bob Johnson',
-        clientAddress: '789 Pine Rd, Chicago',
-        clientICE: 'ICE003456789012',
-        status: 'overdue',
-        items: [
-          { description: 'Database Setup', quantity: 1, unitPrice: 3000 },
-        ],
-        subtotal: 3000,
-        vat: 600,
-        total: 3600,
-        notes: '',
-      },
-    ];
-  });
+  // Load invoices from backend
+  const [invoices, setInvoices] = useState([]);
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await api.get('/invoices');
+        setInvoices(response.data);
+      } catch (error) {
+        console.error('Error fetching invoices:', error);
+      }
+    };
+    fetchInvoices();
+  }, []);
 
   // Settings mock - in production, load from sessionStorage
   const [settings] = useState({
@@ -123,11 +75,6 @@ const Invoices = () => {
   const [expandedActions, setExpandedActions] = useState(null);
 
   const currency = settings.currency || 'DH';
-
-  // Save invoices to sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem('invoices', JSON.stringify(invoices));
-  }, [invoices]);
 
   // ============================================
   // FILTERING & SORTING LOGIC
@@ -195,9 +142,14 @@ const Invoices = () => {
     return { count, total, paid, pending, overdue };
   }, [filteredInvoices]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
-      setInvoices((prev) => prev.filter((inv) => inv.id !== id));
+      try {
+        await api.delete(`/invoices/${id}`);
+        setInvoices(prev => prev.filter((inv) => inv._id !== id));
+      } catch (error) {
+        console.error('Error deleting invoice:', error);
+      }
     }
   };
 

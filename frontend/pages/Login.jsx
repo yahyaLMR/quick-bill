@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
+import api from "../src/lib/api";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ export default function Login() {
       };
     // Add your form submission logic here
     try {
-      const response = await axios.post("http://localhost:5000/api/users/login", formData);
+      const response = await api.post("/users/login", formData);
       console.log("Login successful:", response.data);
       localStorage.setItem("token", response.data.token);
       // Optionally, redirect to dashboard or show success message

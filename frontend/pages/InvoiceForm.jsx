@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import api from '../src/lib/api';
 import {
   IconFileInvoice,
   IconUser,
@@ -30,9 +31,8 @@ import {
  * - Apply single VAT rate to subtotal after discount
  */
 const InvoiceForm = () => {
-  // Load settings and clients from sessionStorage with proper defaults
-  const savedSettings = sessionStorage.getItem('appSettings');
-  const settings = savedSettings ? JSON.parse(savedSettings) : {
+  // Load settings and clients from backend
+  const [settings, setSettings] = useState({
     vatEnabled: true,
     vatRate: 0.2,
     currency: 'DH',
@@ -41,14 +41,37 @@ const InvoiceForm = () => {
     companyName: 'Your Company',
     companyAddress: 'Your Address',
     companyICE: 'Your ICE',
-  };
-  const clients = JSON.parse(sessionStorage.getItem('clients') || '[]');
-  
-  // Get next invoice number from existing invoices
-  const existingInvoices = JSON.parse(sessionStorage.getItem('invoices') || '[]');
-  const nextNumber = existingInvoices.length > 0 
-    ? Math.max(...existingInvoices.map(inv => inv.id || 0)) + 1 
-    : 1;
+  });
+  const [clients, setClients] = useState([]);
+  const [nextNumber, setNextNumber] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [settingsRes, clientsRes, invoicesRes] = await Promise.all([
+          api.get('/settings'),
+          api.get('/clients'),
+          api.get('/invoices')
+        ]);
+        
+        setSettings(settingsRes.data);
+        setClients(clientsRes.data);
+        
+        const existingInvoices = invoicesRes.data;
+        // Calculate next number based on existing invoices count or max ID logic if applicable
+        // Assuming simple count + 1 for now or parsing the last number
+        // Ideally backend should handle numbering
+        const maxId = existingInvoices.length > 0 
+          ? Math.max(...existingInvoices.map(inv => parseInt(inv.number.split('-').pop()) || 0)) 
+          : 0;
+        setNextNumber(maxId + 1);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const [formData, setFormData] = useState({
     clientName: '',
@@ -73,7 +96,7 @@ const InvoiceForm = () => {
 
   // Client picker
   const pickClient = (id) => {
-    const client = clients.find((c) => String(c.id) === String(id));
+    const client = clients.find((c) => String(c._id) === String(id));
     if (!client) return;
     setFormData({
       ...formData,
@@ -147,13 +170,12 @@ const InvoiceForm = () => {
   const calculateTotal = () => calculateSubtotal() + calculateVAT();
 
   // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const now = new Date();
     const invoice = {
-      id: nextNumber,
-      number: `FAC-${now.getFullYear()}-${String(nextNumber).padStart(3, '0')}`,
+      number: `${settings.numberingPrefix}-${now.getFullYear()}-${String(nextNumber).padStart(settings.zeroPadding, '0')}`,
       date: now.toISOString().split('T')[0],
       dueDate: formData.dueDate,
       clientName: formData.clientName,
@@ -167,29 +189,32 @@ const InvoiceForm = () => {
       notes: formData.notes,
     };
 
-    // Save to sessionStorage
-    const invoices = JSON.parse(sessionStorage.getItem('invoices') || '[]');
-    invoices.push(invoice);
-    sessionStorage.setItem('invoices', JSON.stringify(invoices));
-
-    // Reset form
-    setFormData({
-      clientName: '',
-      clientAddress: '',
-      clientICE: '',
-      dueDate: '',
-      notes: '',
-      discount: 0,
-      items: [
-        {
-          description: '',
-          quantity: 1,
-          unitPrice: 0,
-        },
-      ],
-    });
-    setShowPreview(false);
-    alert('Invoice saved successfully!');
+    try {
+      await api.post('/invoices', invoice);
+      
+      // Reset form
+      setFormData({
+        clientName: '',
+        clientAddress: '',
+        clientICE: '',
+        dueDate: '',
+        notes: '',
+        discount: 0,
+        items: [
+          {
+            description: '',
+            quantity: 1,
+            unitPrice: 0,
+          },
+        ],
+      });
+      setShowPreview(false);
+      setNextNumber(prev => prev + 1);
+      alert('Invoice saved successfully!');
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      alert('Error saving invoice');
+    }
   };
 
   // Display number for preview
@@ -400,7 +425,7 @@ const InvoiceForm = () => {
                     Select a client...
                   </option>
                   {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option key={c._id} value={c._id}>
                       {c.name}
                     </option>
                   ))}
