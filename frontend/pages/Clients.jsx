@@ -1,43 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-react';
+import axios from 'axios';
 
 /**
  * Clients Component
  * 
  * Purpose: Manage client records with CRUD operations
- * Storage: SessionStorage (key: 'clients')
+ * Storage: Backend API (MongoDB)
  * Used by: InvoiceForm (client picker), Invoices (client data)
  * 
  * Data Structure:
  * {
- *   id: number,
+ *   _id: string,
  *   name: string,
  *   address: string,
  *   ice: string (ICE tax identification number)
  * }
  */
 const Clients = () => {
-  // Initialize clients from sessionStorage or use default sample data
-  const [clients, setClients] = useState(() => {
-    const savedClients = sessionStorage.getItem('clients');
-    if (savedClients) {
-      return JSON.parse(savedClients);
-    }
-    return [
-      { id: 1, name: 'John Doe', address: '123 Main St, New York, NY 10001', ice: 'ICE001234567890' },
-      { id: 2, name: 'Jane Smith', address: '456 Oak Ave, Los Angeles, CA 90001', ice: 'ICE002345678901' },
-      { id: 3, name: 'Bob Johnson', address: '789 Pine Rd, Chicago, IL 60601', ice: 'ICE003456789012' },
-    ];
-  });
+  // Initialize clients state
+  const [clients, setClients] = useState([]);
 
-  // ============================================
-  // DATA PERSISTENCE
-  // ============================================
-  // Auto-save to sessionStorage whenever clients array changes
-  // This ensures InvoiceForm always has up-to-date client list
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/clients');
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
+  // Fetch clients from backend on mount
   useEffect(() => {
-    sessionStorage.setItem('clients', JSON.stringify(clients));
-  }, [clients]);
+    fetchClients();
+  }, []);
 
   // ============================================
   // FORM STATE MANAGEMENT
@@ -60,24 +56,30 @@ const Clients = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.name && formData.address && formData.ice) {
-      if (editingId) {
-        // Update existing client
-        setClients(prev => prev.map(client => 
-          client.id === editingId ? { ...client, ...formData } : client
-        ));
-        setEditingId(null);
-      } else {
-        // Add new client
-        const newClient = {
-          id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1,
-          ...formData
-        };
-        setClients(prev => [...prev, newClient]);
+      try {
+        if (editingId) {
+          // Update existing client
+          const response = await axios.put(`http://localhost:5000/api/clients/${editingId}`, formData);
+          
+          const updatedClient = response.data;
+          setClients(prev => prev.map(client => 
+            client._id === editingId ? updatedClient : client
+          ));
+          setEditingId(null);
+        } else {
+          // Add new client
+          const response = await axios.post('http://localhost:5000/api/clients', formData);
+          
+          const newClient = response.data;
+          setClients(prev => [...prev, newClient]);
+        }
+        setFormData({ name: '', address: '', ice: '' });
+      } catch (error) {
+        console.error('Error saving client:', error);
       }
-      setFormData({ name: '', address: '', ice: '' });
     }
   };
 
@@ -87,13 +89,20 @@ const Clients = () => {
       address: client.address,
       ice: client.ice
     });
-    setEditingId(client.id);
+    setEditingId(client._id);
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = (id) => {
-    setClients(prev => prev.filter(client => client.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/clients/${id}`);
+        setClients(prev => prev.filter(client => client._id !== id));
+      } catch (error) {
+        console.error('Error deleting client:', error);
+      }
+    }
   };
 
   return (
@@ -226,9 +235,9 @@ const Clients = () => {
                   </tr>
                 ) : (
                   clients.map((client) => (
-                    <tr key={client.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                    <tr key={client._id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">
-                        #{client.id}
+                        #{client._id.substring(client._id.length - 6)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {client.name}
@@ -248,7 +257,7 @@ const Clients = () => {
                           <IconEdit className="h-5 w-5 inline" />
                         </button>
                         <button
-                          onClick={() => handleDelete(client.id)}
+                          onClick={() => handleDelete(client._id)}
                           className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                           title="Delete client"
                         >

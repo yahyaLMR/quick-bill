@@ -10,15 +10,14 @@ const connectDB = require('./config/dbconnect');
 connectDB();
 
 // Routes
-// const settingsRoutes = require('./routes/settingsRoutes');
 const invoiceRoutes = require('./routes/invoices');
+const clientRoutes = require('./routes/clients');
 const userRoutes = require('./routes/auth');
 
 app.use('/api/users', userRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/clients', clientRoutes);
 
-// app.use('/api/settings', settingsRoutes);
-// app.use('/api/users', userRoutes);
 
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server is running on port ${process.env.PORT || 5000}`);
