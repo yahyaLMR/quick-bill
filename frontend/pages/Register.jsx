@@ -9,6 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = {
@@ -17,8 +18,9 @@ export default function Register() {
       password: password,
       phone: phone,
     };
-    // Add your form submission logic here
+    
     try {
+      // Call register API
       const response = await api.post("/users/register", formData);
       console.log("Registration successful:", response.data);
       // Optionally, redirect to login page or show success message

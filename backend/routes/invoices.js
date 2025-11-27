@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Invoice = require('../models/invoice');
 
-// Get all invoices
+// @route   GET /api/invoices
+// @desc    Get all invoices
+// @access  Public (Consider making private)
 router.get('/', async (req, res) => {
     try {
         const invoices = await Invoice.find();
@@ -12,7 +14,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get one invoice
+// @route   GET /api/invoices/:id
+// @desc    Get one invoice by ID
+// @access  Public (Consider making private)
 router.get('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
@@ -23,7 +27,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create a new invoice
+// @route   POST /api/invoices
+// @desc    Create a new invoice
+// @access  Public (Consider making private)
 router.post('/', async (req, res) => {
     try {
         const invoiceData = req.body;
@@ -36,7 +42,9 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update an invoice
+// @route   PUT /api/invoices/:id
+// @desc    Update an invoice
+// @access  Public (Consider making private)
 router.put('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
@@ -50,7 +58,9 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete an invoice
+// @route   DELETE /api/invoices/:id
+// @desc    Delete an invoice
+// @access  Public (Consider making private)
 router.delete('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);

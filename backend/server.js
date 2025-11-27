@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json());
 // Database connection
 const connectDB = require('./config/dbconnect');
+// Connect to MongoDB
 connectDB();
 
 // Routes
@@ -15,6 +16,7 @@ const clientRoutes = require('./routes/clients');
 const userRoutes = require('./routes/auth');
 const settingsRoutes = require('./routes/settings');
 
+// Use Routes
 app.use('/api/users', userRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/clients', clientRoutes);

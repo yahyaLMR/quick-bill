@@ -43,6 +43,7 @@ const Profile = () => {
 
   const [editData, setEditData] = useState(profileData);
 
+  // Fetch profile data and stats on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,13 +65,15 @@ const Profile = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [navigate]);
 
+  // Enable edit mode
   const handleEdit = () => {
     setEditData(profileData);
     setIsEditing(true);
   };
 
+  // Save profile changes
   const handleSave = async () => {
     try {
       const response = await api.put("/users/profile", editData);
@@ -81,6 +84,7 @@ const Profile = () => {
     }
   };
 
+  // Cancel editing
   const handleCancel = () => {
     setEditData(profileData);
     setIsEditing(false);

@@ -46,6 +46,7 @@ const Invoices = () => {
   // Load invoices from backend
   const [invoices, setInvoices] = useState([]);
 
+  // Fetch invoices on mount
   useEffect(() => {
     const fetchInvoices = async () => {
       try {

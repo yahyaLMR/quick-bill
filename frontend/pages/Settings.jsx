@@ -61,6 +61,7 @@ const Settings = () => {
   const [editSettings, setEditSettings] = useState(settings);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  // Fetch settings on mount
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -74,18 +75,21 @@ const Settings = () => {
       }
     };
     fetchSettings();
-  }, []);
+  }, [navigate]);
 
+  // Enable edit mode
   const handleEdit = () => {
     setEditSettings(settings);
     setIsEditing(true);
   };
 
+  // Cancel editing
   const handleCancel = () => {
     setEditSettings(settings);
     setIsEditing(false);
   };
 
+  // Save settings
   const handleSave = async () => {
     try {
       const response = await api.put('/settings', editSettings);

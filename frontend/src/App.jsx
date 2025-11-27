@@ -7,7 +7,6 @@ import Invoices from "../pages/Invoices";
 import InvoiceForm from "../pages/InvoiceForm";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
-import Logout from "../pages/Logout";
 import DashboardPage from "../pages/Dashboard";
 import Page404 from "../pages/page404";
 import LandingPage from "../pages/LandingPage";
@@ -38,7 +37,6 @@ export default function App() {
         <Route path="/invoice-form" element={<InvoiceForm />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/logout" element={<Logout />} />
       </Route>
 
       {/* Global 404 */}

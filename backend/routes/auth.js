@@ -5,6 +5,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// @route   GET /api/users/profile
+// @desc    Get user profile
+// @access  Private
 router.get('/profile', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -15,6 +18,9 @@ router.get('/profile', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   PUT /api/users/profile
+// @desc    Update user profile
+// @access  Private
 router.put('/profile', authMiddleware, async (req, res) => {
     const { name, email, phone, avatar } = req.body;
     try {
@@ -34,6 +40,9 @@ router.put('/profile', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   POST /api/users/register
+// @desc    Register a new user
+// @access  Public
 router.post('/register', async (req, res) => {
     const { name, email, password, phone, avatar } = req.body; // Add other fields as necessary
     try {
@@ -50,6 +59,10 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// @route   POST /api/users/login
+// @desc    Authenticate user & get token
+// @access  Public
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });

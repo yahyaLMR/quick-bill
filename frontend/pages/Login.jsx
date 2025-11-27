@@ -8,18 +8,24 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = {
         email,
         password,
       };
-    // Add your form submission logic here
+    
     try {
+      // Call login API
       const response = await api.post("/users/login", formData);
       console.log("Login successful:", response.data);
+      
+      // Store token in local storage
       localStorage.setItem("token", response.data.token);
-      // Optionally, redirect to dashboard or show success message
+      
+      // Redirect to profile page
       navigate("/profile");
     } catch (error) {
       console.error("There was an error logging in!", error);

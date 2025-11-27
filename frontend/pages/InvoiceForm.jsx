@@ -47,6 +47,7 @@ const InvoiceForm = () => {
   const [clients, setClients] = useState([]);
   const [nextNumber, setNextNumber] = useState(1);
 
+  // Fetch initial data (settings, clients, invoices)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,7 +76,7 @@ const InvoiceForm = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const [formData, setFormData] = useState({
     clientName: '',

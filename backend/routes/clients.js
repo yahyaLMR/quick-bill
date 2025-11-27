@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/client');
 
-// Get all clients
+// @route   GET /api/clients
+// @desc    Get all clients
+// @access  Public (Consider making private)
 router.get('/', async (req, res) => {
     try {
         const clients = await Client.find();
@@ -12,7 +14,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get one client
+// @route   GET /api/clients/:id
+// @desc    Get one client by ID
+// @access  Public (Consider making private)
 router.get('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
@@ -23,7 +27,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create a client
+// @route   POST /api/clients
+// @desc    Create a new client
+// @access  Public (Consider making private)
 router.post('/', async (req, res) => {
     const client = new Client({
         name: req.body.name,
@@ -39,7 +45,9 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update a client
+// @route   PUT /api/clients/:id
+// @desc    Update a client
+// @access  Public (Consider making private)
 router.put('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
@@ -56,7 +64,9 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete a client
+// @route   DELETE /api/clients/:id
+// @desc    Delete a client
+// @access  Public (Consider making private)
 router.delete('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);

@@ -23,21 +23,20 @@ const Clients = () => {
   // Initialize clients state
   const [clients, setClients] = useState([]);
 
-  const fetchClients = async () => {
-    try {
-      const response = await api.get('/clients');
-      setClients(response.data);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-       localStorage.removeItem("token");
-        navigate('/login');
-    }
-  };
-
   // Fetch clients from backend on mount
   useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await api.get('/clients');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+         localStorage.removeItem("token");
+          navigate('/login');
+      }
+    };
     fetchClients();
-  }, []);
+  }, [navigate]);
 
   // ============================================
   // FORM STATE MANAGEMENT
@@ -60,6 +59,7 @@ const Clients = () => {
     }));
   };
 
+  // Handle form submission (Create or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.name && formData.address && formData.ice) {
@@ -80,6 +80,7 @@ const Clients = () => {
           const newClient = response.data;
           setClients(prev => [...prev, newClient]);
         }
+        // Reset form
         setFormData({ name: '', address: '', ice: '' });
       } catch (error) {
         console.error('Error saving client:', error);
@@ -87,6 +88,7 @@ const Clients = () => {
     }
   };
 
+  // Populate form for editing
   const handleChange = (client) => {
     setFormData({
       name: client.name,

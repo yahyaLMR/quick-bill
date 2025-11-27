@@ -3,7 +3,9 @@ const router = express.Router();
 const Settings = require('../models/settings');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Get settings
+// @route   GET /api/settings
+// @desc    Get user settings
+// @access  Private
 router.get('/', authMiddleware, async (req, res) => {
     try {
         let settings = await Settings.findOne({ user: req.user.id });
@@ -19,7 +21,9 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// Update settings
+// @route   PUT /api/settings
+// @desc    Update user settings
+// @access  Private
 router.put('/', authMiddleware, async (req, res) => {
     try {
         let settings = await Settings.findOne({ user: req.user.id });
