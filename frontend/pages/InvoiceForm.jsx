@@ -95,6 +95,8 @@ const InvoiceForm = () => {
   });
 
   const [showPreview, setShowPreview] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
   const previewRef = useRef(null);
 
   const currency = settings.currency || 'DH';
@@ -215,10 +217,12 @@ const InvoiceForm = () => {
       });
       setShowPreview(false);
       setNextNumber(prev => prev + 1);
-      alert('Invoice saved successfully!');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
     } catch (error) {
       console.error('Error saving invoice:', error);
-      alert('Error saving invoice');
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
     }
   };
 
@@ -399,6 +403,22 @@ const InvoiceForm = () => {
             Invoice № {String(nextNumber).padStart(settings.zeroPadding || 4, '0')}
           </p>
         </div>
+
+        {showSuccessMessage && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+            <p className="text-green-800 dark:text-green-200 font-medium">
+              ✓ Invoice saved successfully!
+            </p>
+          </div>
+        )}
+
+        {showErrorMessage && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+            <p className="text-red-800 dark:text-red-200 font-medium">
+              ⚠ Error saving invoice. Please try again.
+            </p>
+          </div>
+        )}
 
         <form
           onSubmit={(e) => {

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import { Link, Outlet } from 'react-router-dom';
+import api from "../src/lib/api";
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -68,6 +69,19 @@ export default function DashboardLayout() {
     },
   ];
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState({ name: "User", avatar: "" });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/users/profile");
+        setUser(response.data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Handle user logout
   const handlelogout = () => {
@@ -100,11 +114,11 @@ export default function DashboardLayout() {
             <Link to="/profile">
               <SidebarLink
                 link={{
-                  label: "Manu Arora",
+                  label: user.name || "User",
                   href: "#",
                   icon: (
                     <img
-                      src="https://assets.aceternity.com/manu.png"
+                      src={user.avatar || "https://assets.aceternity.com/manu.png"}
                       className="h-7 w-7 shrink-0 rounded-full"
                       width={50}
                       height={50}

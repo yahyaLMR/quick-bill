@@ -159,8 +159,12 @@ const Invoices = () => {
   };
 
   const handleDuplicate = (id) => {
-    const invoice = invoices.find((inv) => inv.id === id);
+    const invoice = invoices.find((inv) => inv._id === id);
     if (invoice) {
+      // Logic for duplication needs to be updated for backend integration
+      // For now, we'll just log it
+      console.log("Duplicate functionality pending backend integration", invoice);
+      /*
       const newId = Math.max(...invoices.map((i) => i.id)) + 1;
       const currentYear = new Date().getFullYear();
       const invoiceNumber = `FAC-${currentYear}-${String(newId).padStart(3, '0')}`;
@@ -172,13 +176,19 @@ const Invoices = () => {
         status: 'pending',
       };
       setInvoices((prev) => [...prev, newInvoice]);
+      */
     }
   };
 
-  const handleUpdateInvoice = (id, updates) => {
-    setInvoices((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, ...updates } : inv))
-    );
+  const handleUpdateInvoice = async (id, updates) => {
+    try {
+      await api.put(`/invoices/${id}`, updates);
+      setInvoices((prev) =>
+        prev.map((inv) => (inv._id === id ? { ...inv, ...updates } : inv))
+      );
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+    }
   };
 
   const exportToCSV = () => {
@@ -202,7 +212,7 @@ const Invoices = () => {
 
   const saveEdit = () => {
     if (!editInvoice) return;
-    handleUpdateInvoice(editInvoice.id, {
+    handleUpdateInvoice(editInvoice._id, {
       clientName: editInvoice.clientName,
       clientAddress: editInvoice.clientAddress,
       clientICE: editInvoice.clientICE,
@@ -376,7 +386,7 @@ const Invoices = () => {
                 <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {filteredInvoices.map((invoice) => (
                     <tr
-                      key={invoice.id}
+                      key={invoice._id}
                       className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -392,7 +402,7 @@ const Invoices = () => {
                         <select
                           value={invoice.status || 'pending'}
                           onChange={(e) =>
-                            handleUpdateInvoice(invoice.id, { status: e.target.value })
+                            handleUpdateInvoice(invoice._id, { status: e.target.value })
                           }
                           className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                             invoice.status || 'pending'
@@ -411,7 +421,7 @@ const Invoices = () => {
                           <button
                             onClick={() =>
                               setExpandedActions(
-                                expandedActions === invoice.id ? null : invoice.id
+                                expandedActions === invoice._id ? null : invoice._id
                               )
                             }
                             className="flex items-center gap-1 px-3 py-1 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
@@ -420,7 +430,7 @@ const Invoices = () => {
                             <IconChevronDown className="h-4 w-4" />
                           </button>
 
-                          {expandedActions === invoice.id && (
+                          {expandedActions === invoice._id && (
                             <>
                               <div
                                 className="fixed inset-0 z-10"
@@ -449,7 +459,7 @@ const Invoices = () => {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    handleDuplicate(invoice.id);
+                                    handleDuplicate(invoice._id);
                                     setExpandedActions(null);
                                   }}
                                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
@@ -459,7 +469,7 @@ const Invoices = () => {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    handleDelete(invoice.id);
+                                    handleDelete(invoice._id);
                                     setExpandedActions(null);
                                   }}
                                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-b-lg"
