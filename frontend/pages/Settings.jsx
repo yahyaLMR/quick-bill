@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../src/lib/api';
 import {
   IconSettings,
@@ -37,6 +38,7 @@ import {
  * }
  */
 const Settings = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -67,6 +69,8 @@ const Settings = () => {
         setEditSettings(response.data);
       } catch (error) {
         console.error('Error fetching settings:', error);
+        localStorage.removeItem("token");
+        navigate('/login');
       }
     };
     fetchSettings();

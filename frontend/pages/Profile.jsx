@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../src/lib/api";
 import {
   IconUser,
@@ -30,6 +31,7 @@ import {
  * }
  */
 const Profile = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "",
@@ -57,6 +59,8 @@ const Profile = () => {
         });
       } catch (error) {
         console.error("Error fetching data:", error);
+        localStorage.removeItem("token");
+        navigate('/login');
       }
     };
     fetchData();

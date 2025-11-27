@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IconUserPlus, IconEdit, IconTrash } from '@tabler/icons-react';
 import api from '../src/lib/api';
 
@@ -18,6 +19,7 @@ import api from '../src/lib/api';
  * }
  */
 const Clients = () => {
+  const navigate = useNavigate();
   // Initialize clients state
   const [clients, setClients] = useState([]);
 
@@ -27,6 +29,8 @@ const Clients = () => {
       setClients(response.data);
     } catch (error) {
       console.error('Error fetching clients:', error);
+       localStorage.removeItem("token");
+        navigate('/login');
     }
   };
 

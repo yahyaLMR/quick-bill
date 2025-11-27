@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../src/lib/api';
 import {
   IconFileInvoice,
@@ -41,6 +42,7 @@ import {
  * }
  */
 const Invoices = () => {
+  const navigate = useNavigate();
   // Load invoices from backend
   const [invoices, setInvoices] = useState([]);
 
@@ -149,6 +151,8 @@ const Invoices = () => {
         setInvoices(prev => prev.filter((inv) => inv._id !== id));
       } catch (error) {
         console.error('Error deleting invoice:', error);
+        localStorage.removeItem("token");
+        navigate('/login');
       }
     }
   };

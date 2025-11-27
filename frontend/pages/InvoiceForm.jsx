@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../src/lib/api';
 import {
   IconFileInvoice,
@@ -31,6 +32,7 @@ import {
  * - Apply single VAT rate to subtotal after discount
  */
 const InvoiceForm = () => {
+  const navigate = useNavigate();
   // Load settings and clients from backend
   const [settings, setSettings] = useState({
     vatEnabled: true,
@@ -68,6 +70,8 @@ const InvoiceForm = () => {
 
       } catch (error) {
         console.error('Error fetching data:', error);
+         localStorage.removeItem("token");
+        navigate('/login');
       }
     };
     fetchData();
@@ -609,7 +613,7 @@ const InvoiceForm = () => {
           </div>
 
           {/* Totals Summary */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-6 mb-6">
+          <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-6 mb-6">
             <div className="space-y-3">
               <div className="flex justify-between text-neutral-700 dark:text-neutral-300">
                 <span>Subtotal:</span>
