@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import api from "../src/lib/api";
 import {
   IconArrowLeft,
@@ -16,6 +16,7 @@ import LogoIcon from "../components/logoicon";
 import Logo from "../components/logo";
 
 export default function DashboardLayout() {
+  const location = useLocation();
   // Navigation links configuration
   const links = [
     {
@@ -105,7 +106,11 @@ export default function DashboardLayout() {
               {/* Render Sidebar Links */}
               {links.map((link, idx) => (
                 <Link onClick={link.label === "Logout" ? handlelogout : undefined} to={link.href} key={idx} >
-                  <SidebarLink key={idx} link={link} />
+                  <SidebarLink
+                    key={idx}
+                    link={link}
+                    className={location.pathname === link.href ? "bg-neutral-200 dark:bg-neutral-700 rounded-md px-2" : ""}
+                  />
                 </Link>
               ))}
             </div>
