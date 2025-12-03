@@ -30,7 +30,7 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-neutral-900">
+    <div className="flex w-full flex-1 items-center justify-center py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md dark:bg-neutral-800">
         <h2 className="mb-6 text-center text-2xl font-bold text-neutral-800 dark:text-neutral-200">
           Register
