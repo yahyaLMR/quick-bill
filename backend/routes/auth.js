@@ -73,7 +73,7 @@ router.post('/login', async (req, res) => {
         if (!await bcrypt.compare(password, user.password)) {
             return res.status(400).json({ message: 'invalid email or password' });
         }
-        let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '3m' });
+        let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '20m' });
         res.status(200).json({ message: 'Login successful', token, email: user.email, name: user.name, phone: user.phone, avatar: user.avatar });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

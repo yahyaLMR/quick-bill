@@ -67,6 +67,8 @@ const Invoices = () => {
         setSettings(settingsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
+        localStorage.removeItem("token");
+        navigate('/login');
       }
     };
     fetchData();
