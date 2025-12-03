@@ -11,6 +11,10 @@ export default function Navbar() {
               <div className="h-6 w-6 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
               <span className="text-xl font-bold text-neutral-800 dark:text-neutral-200">Quick Bill</span>
             </Link>
+            <div className="hidden md:flex ml-10 space-x-8">
+              <Link to="/#features" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium">Features</Link>
+              <Link to="/#pricing" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium">Pricing</Link>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium">
