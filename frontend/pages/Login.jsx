@@ -8,10 +8,12 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     const formData = {
         email,
         password,
@@ -19,7 +21,7 @@ export default function Login() {
     
     try {
       // Call login API
-      const response = await api.post("/users/login", formData);
+      const response = await api.post("/users/login", formData, { skipErrorToast: true });
       console.log("Login successful:", response.data);
       
       // Store token in local storage
@@ -29,6 +31,11 @@ export default function Login() {
       navigate("/profile");
     } catch (error) {
       console.error("There was an error logging in!", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Invalid email or password");
+      }
     }
   };
 
@@ -64,6 +71,11 @@ export default function Login() {
               className="mt-1 block w-full rounded-md border border-gray-300 p-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
               placeholder="********"
             />
+            {error && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
           </div>
           <button
             type="submit"

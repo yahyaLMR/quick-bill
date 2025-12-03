@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from "../src/lib/api";
 import {
   IconArrowLeft,
@@ -17,6 +18,7 @@ import Logo from "../components/logo";
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   // Navigation links configuration
   const links = [
     {
@@ -85,11 +87,13 @@ export default function DashboardLayout() {
   }, []);
 
   // Handle user logout
-  const handlelogout = () => {
+  const handlelogout = (e) => {
+    if (e) e.preventDefault();
     // Clear user session or token
     localStorage.removeItem("token");
+    toast.success("Logged out successfully");
     // Redirect to login page
-    window.location.href = "/login";
+    navigate("/login");
   }
   return (
     <div

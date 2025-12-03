@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Clients from "../pages/Clients";
 import Invoices from "../pages/Invoices";
 import InvoiceForm from "../pages/InvoiceForm";
@@ -24,9 +25,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
  */
 export default function App() {
   return (
-    <Routes>
-      {/* Public Routes (No Sidebar) */}
-      <Route path="/" element={<LandingPage />} />
+    <>
+      <Toaster position="top-left" />
+      <Routes>
+        {/* Public Routes (No Sidebar) */}
+        <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
@@ -41,7 +44,8 @@ export default function App() {
       </Route>
 
       {/* Global 404 */}
-      <Route path="*" element={<Page404 />} />
-    </Routes>
+        <Route path="*" element={<Page404 />} />
+      </Routes>
+    </>
   );
 }
