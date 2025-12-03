@@ -60,6 +60,7 @@ const Settings = () => {
 
   const [editSettings, setEditSettings] = useState(settings);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
 
   // Fetch settings on mount
   useEffect(() => {
@@ -86,14 +87,36 @@ const Settings = () => {
   // Cancel editing
   const handleCancel = () => {
     setEditSettings(settings);
+    setLogoFile(null);
     setIsEditing(false);
   };
 
   // Save settings
   const handleSave = async () => {
     try {
-      const response = await api.put('/settings', editSettings);
+      const formData = new FormData();
+      
+      Object.keys(editSettings).forEach(key => {
+        if (key === 'logoDataUrl') {
+            if (!logoFile && editSettings.logoDataUrl === '') {
+                formData.append('logoDataUrl', '');
+            }
+        } else {
+             formData.append(key, editSettings[key]);
+        }
+      });
+
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+
+      const response = await api.put('/settings', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       setSettings(response.data);
+      setEditSettings(response.data);
+      setLogoFile(null);
       setIsEditing(false);
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -110,6 +133,8 @@ const Settings = () => {
   const handleLogoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    setLogoFile(file);
     const reader = new FileReader();
     reader.onload = () => handleChange({ logoDataUrl: reader.result });
     reader.readAsDataURL(file);
@@ -275,7 +300,10 @@ const Settings = () => {
                           className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                         />
                         <button
-                          onClick={() => handleChange({ logoDataUrl: '' })}
+                          onClick={() => {
+                            handleChange({ logoDataUrl: '' });
+                            setLogoFile(null);
+                          }}
                           className="text-sm text-red-600 hover:text-red-700"
                         >
                           Remove

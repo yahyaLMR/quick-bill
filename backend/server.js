@@ -10,6 +10,9 @@ const connectDB = require('./config/dbconnect');
 // Connect to MongoDB
 connectDB();
 
+// Serve static files
+app.use('/uploads', express.static('uploads'));
+
 // Routes
 const invoiceRoutes = require('./routes/invoices');
 const clientRoutes = require('./routes/clients');

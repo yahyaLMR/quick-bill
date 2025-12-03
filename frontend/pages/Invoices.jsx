@@ -45,28 +45,30 @@ const Invoices = () => {
   const navigate = useNavigate();
   // Load invoices from backend
   const [invoices, setInvoices] = useState([]);
-
-  // Fetch invoices on mount
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-        const response = await api.get('/invoices');
-        setInvoices(response.data);
-      } catch (error) {
-        console.error('Error fetching invoices:', error);
-      }
-    };
-    fetchInvoices();
-  }, []);
-
-  // Settings mock - in production, load from sessionStorage
-  const [settings] = useState({
-    companyName: 'Quick Bill Inc.',
-    companyAddress: '123 Business Ave\nCity, Country',
-    companyICE: 'ICE123456789',
+  const [settings, setSettings] = useState({
+    companyName: '',
+    companyAddress: '',
+    companyICE: '',
     currency: 'DH',
     logoDataUrl: '',
   });
+
+  // Fetch invoices and settings on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [invoicesRes, settingsRes] = await Promise.all([
+          api.get('/invoices'),
+          api.get('/settings')
+        ]);
+        setInvoices(invoicesRes.data);
+        setSettings(settingsRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -501,6 +503,13 @@ const Invoices = () => {
                 {/* Company & Invoice Info */}
                 <div className="flex justify-between mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
                   <div>
+                    {settings.logoDataUrl && (
+                      <img 
+                        src={settings.logoDataUrl} 
+                        alt="Company Logo" 
+                        className="h-12 mb-2 object-contain" 
+                      />
+                    )}
                     <h4 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
                       {settings.companyName}
                     </h4>

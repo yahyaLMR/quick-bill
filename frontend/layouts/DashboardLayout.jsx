@@ -81,6 +81,8 @@ export default function DashboardLayout() {
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user profile:", error);
+        localStorage.removeItem("token");
+        navigate("/login");
       }
     };
     fetchUser();
