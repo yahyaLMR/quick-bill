@@ -161,22 +161,7 @@ const Invoices = () => {
   const handleDuplicate = (id) => {
     const invoice = invoices.find((inv) => inv._id === id);
     if (invoice) {
-      // Logic for duplication needs to be updated for backend integration
-      // For now, we'll just log it
-      console.log("Duplicate functionality pending backend integration", invoice);
-      /*
-      const newId = Math.max(...invoices.map((i) => i.id)) + 1;
-      const currentYear = new Date().getFullYear();
-      const invoiceNumber = `FAC-${currentYear}-${String(newId).padStart(3, '0')}`;
-      const newInvoice = {
-        ...invoice,
-        id: newId,
-        number: invoiceNumber,
-        date: new Date().toISOString().split('T')[0],
-        status: 'pending',
-      };
-      setInvoices((prev) => [...prev, newInvoice]);
-      */
+      navigate('/invoice-form', { state: { duplicateInvoice: invoice } });
     }
   };
 

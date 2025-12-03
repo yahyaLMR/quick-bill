@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../src/lib/api';
 import {
   IconFileInvoice,
@@ -33,6 +33,7 @@ import {
  */
 const InvoiceForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // Load settings and clients from backend
   const [settings, setSettings] = useState({
     vatEnabled: true,
@@ -93,6 +94,38 @@ const InvoiceForm = () => {
       },
     ],
   });
+
+  // Handle duplicate invoice data
+  useEffect(() => {
+    if (location.state?.duplicateInvoice) {
+      const { duplicateInvoice } = location.state;
+
+      // Calculate discount if not present
+      let discount = duplicateInvoice.discount || 0;
+      if (!discount && duplicateInvoice.items && duplicateInvoice.subtotal) {
+        const itemsTotal = duplicateInvoice.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        if (itemsTotal > 0 && duplicateInvoice.subtotal < itemsTotal) {
+          // Round to 2 decimal places to avoid floating point issues
+          discount = Math.round(((itemsTotal - duplicateInvoice.subtotal) / itemsTotal) * 100 * 100) / 100;
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        clientName: duplicateInvoice.clientName || '',
+        clientAddress: duplicateInvoice.clientAddress || '',
+        clientICE: duplicateInvoice.clientICE || '',
+        dueDate: '', // Reset due date
+        notes: duplicateInvoice.notes || '',
+        discount: discount,
+        items: duplicateInvoice.items?.map(item => ({
+          description: item.description || '',
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice || 0,
+        })) || [{ description: '', quantity: 1, unitPrice: 0 }],
+      }));
+    }
+  }, [location.state]);
 
   const [showPreview, setShowPreview] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
