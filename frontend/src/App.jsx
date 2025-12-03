@@ -13,6 +13,7 @@ import LandingPage from "../pages/LandingPage";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import DashboardLayout from "../layouts/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 /**
  * Main App Component
@@ -29,8 +30,8 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Dashboard Routes (With Sidebar) */}
-      <Route element={<DashboardLayout />}>
+      {/* Dashboard Routes (With Sidebar) - Protected */}
+      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/invoices" element={<Invoices />} />

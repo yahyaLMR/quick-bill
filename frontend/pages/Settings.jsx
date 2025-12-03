@@ -270,7 +270,7 @@ const Settings = () => {
                     {editSettings.logoDataUrl && (
                       <div className="flex items-center gap-2">
                         <img
-                          src={editSettings.logoDataUrl}
+                          src={editSettings.logoDataUrl || null}
                           alt="Company Logo"
                           className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                         />
@@ -287,7 +287,7 @@ const Settings = () => {
                   <div className="px-4 py-2">
                     {settings.logoDataUrl ? (
                       <img
-                        src={settings.logoDataUrl}
+                        src={settings.logoDataUrl || null}
                         alt="Company Logo"
                         className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                       />

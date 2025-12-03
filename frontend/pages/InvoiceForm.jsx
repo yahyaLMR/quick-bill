@@ -252,7 +252,7 @@ const InvoiceForm = () => {
               <div>
                 <h3 className="font-bold text-neutral-900 dark:text-neutral-100 mb-2">Seller</h3>
                 {settings.logoDataUrl && (
-                  <img src={settings.logoDataUrl} alt="logo" className="h-10 mb-2" />
+                  <img src={settings.logoDataUrl || null} alt="logo" className="h-10 mb-2" />
                 )}
                 <p className="font-semibold text-neutral-900 dark:text-neutral-100">
                   {settings.companyName || 'Your Company'}
