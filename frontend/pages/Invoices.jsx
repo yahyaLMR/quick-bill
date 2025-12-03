@@ -13,6 +13,8 @@ import {
   IconFilter,
   IconSearch,
 } from '@tabler/icons-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import InvoicePDF from '../src/components/InvoicePDF';
 
 /**
  * Invoices Component
@@ -434,6 +436,18 @@ const Invoices = () => {
                                   <IconEye className="h-4 w-4" />
                                   Preview
                                 </button>
+                                <PDFDownloadLink
+                                  document={<InvoicePDF invoice={invoice} settings={settings} />}
+                                  fileName={`invoice_${invoice.number}.pdf`}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                                >
+                                  {({ loading }) => (
+                                    <>
+                                      <IconDownload className="h-4 w-4" />
+                                      {loading ? 'Generating...' : 'Download PDF'}
+                                    </>
+                                  )}
+                                </PDFDownloadLink>
                                 <button
                                   onClick={() => {
                                     setEditInvoice(invoice);
@@ -491,12 +505,26 @@ const Invoices = () => {
                 <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                   Invoice #{viewInvoice.number}
                 </h3>
-                <button
-                  onClick={() => setViewInvoice(null)}
-                  className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                >
-                  <IconX className="h-6 w-6" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <PDFDownloadLink
+                    document={<InvoicePDF invoice={viewInvoice} settings={settings} />}
+                    fileName={`invoice_${viewInvoice.number}.pdf`}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                  >
+                    {({ loading }) => (
+                      <>
+                        <IconDownload className="h-4 w-4" />
+                        {loading ? 'Generating...' : 'Download PDF'}
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                  <button
+                    onClick={() => setViewInvoice(null)}
+                    className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                  >
+                    <IconX className="h-6 w-6" />
+                  </button>
+                </div>
               </div>
 
               <div className="p-6">

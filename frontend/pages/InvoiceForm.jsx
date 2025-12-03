@@ -9,7 +9,10 @@ import {
   IconEye,
   IconDeviceFloppy,
   IconX,
+  IconDownload,
 } from '@tabler/icons-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import InvoicePDF from '../src/components/InvoicePDF';
 
 /**
  * InvoiceForm Component
@@ -272,6 +275,20 @@ const InvoiceForm = () => {
     const now = new Date();
     const displayNumber = getDisplayNumber();
 
+    const invoiceForPDF = {
+      number: displayNumber,
+      date: now.toISOString(),
+      dueDate: formData.dueDate,
+      clientName: formData.clientName,
+      clientAddress: formData.clientAddress,
+      clientICE: formData.clientICE,
+      items: formData.items,
+      subtotal: calculateSubtotal(),
+      vat: calculateVAT(),
+      total: calculateTotal(),
+      notes: formData.notes,
+    };
+
     return (
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-5xl mx-auto">
@@ -407,6 +424,20 @@ const InvoiceForm = () => {
               <IconX className="h-5 w-5" />
               Cancel
             </button>
+
+            <PDFDownloadLink
+              document={<InvoicePDF invoice={invoiceForPDF} settings={settings} />}
+              fileName={`invoice_${displayNumber}.pdf`}
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              {({ blob, url, loading, error }) => (
+                <>
+                  <IconDownload className="h-5 w-5" />
+                  {loading ? 'Generating...' : 'Download PDF'}
+                </>
+              )}
+            </PDFDownloadLink>
+
             <button
               onClick={handleSubmit}
               className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
