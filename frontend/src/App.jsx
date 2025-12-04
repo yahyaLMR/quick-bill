@@ -11,6 +11,8 @@ import Settings from "../pages/Settings";
 import DashboardPage from "../pages/Dashboard";
 import Page404 from "../pages/page404";
 import LandingPage from "../pages/LandingPage";
+import Features from "../pages/Features";
+import Pricing from "../pages/Pricing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -32,6 +34,8 @@ export default function App() {
         {/* Public Routes (With Navbar) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* Global 404 */}
