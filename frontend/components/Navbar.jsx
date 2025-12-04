@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../src/context/ThemeContext';
+import { IconSun, IconMoon } from '@tabler/icons-react';
 
 export default function Navbar() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <nav className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,6 +27,13 @@ export default function Navbar() {
             <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
               Register
             </Link>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {theme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </button>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from "../src/lib/api";
+import { useTheme } from '../src/context/ThemeContext';
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -11,12 +12,15 @@ import {
   IconSettings,
   IconUserBolt,
   IconUsers,
+  IconSun,
+  IconMoon,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import LogoIcon from "../components/logoicon";
 import Logo from "../components/logo";
 
 export default function DashboardLayout() {
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   // Navigation links configuration
@@ -122,6 +126,15 @@ export default function DashboardLayout() {
             </div>
           </div>
           <div>
+            <div onClick={toggleTheme} className="cursor-pointer mb-2">
+               <SidebarLink 
+                 link={{
+                   label: theme === 'dark' ? 'Light Mode' : 'Dark Mode',
+                   href: "#",
+                   icon: theme === 'dark' ? <IconSun className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> : <IconMoon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                 }}
+               />
+             </div>
             <Link to="/profile">
               <SidebarLink
                 link={{
