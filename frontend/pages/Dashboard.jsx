@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { 
   IconCurrencyDollar, 
   IconFileInvoice, 
@@ -130,6 +130,7 @@ const DashboardPage = () => {
         setChartData(last6Months);
         setLoading(false);
       } catch (err) {
+        Navigate("/login");
         console.error("Error fetching dashboard data:", err);
         setError("Failed to load dashboard data. Please try again.");
         setLoading(false);

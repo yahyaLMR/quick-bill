@@ -50,7 +50,10 @@ api.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    toast.error(errorMessage);
+    if (errorMessage !== 'Token is not valid') {
+      toast.error(errorMessage);
+    }
+    
     return Promise.reject(error);
   }
 );

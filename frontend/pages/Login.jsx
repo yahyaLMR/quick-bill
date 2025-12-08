@@ -28,7 +28,7 @@ export default function Login() {
       localStorage.setItem("token", response.data.token);
       
       // Redirect to profile page
-      navigate("/profile");
+      navigate("/dashboard");
     } catch (error) {
       console.error("There was an error logging in!", error);
       if (error.response && error.response.data && error.response.data.message) {
