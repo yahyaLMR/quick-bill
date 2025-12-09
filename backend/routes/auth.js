@@ -1,83 +1,122 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const authMiddleware = require('../middleware/authMiddleware');
+const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const authMiddleware = require("../middleware/authMiddleware");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 // @route   GET /api/users/profile
 // @desc    Get user profile
 // @access  Private
-router.get('/profile', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        res.json(user);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
 // @route   PUT /api/users/profile
 // @desc    Update user profile
 // @access  Private
-router.put('/profile', authMiddleware, async (req, res) => {
-    const { name, email, phone, avatar } = req.body;
-    try {
-        let user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+router.put("/profile", authMiddleware, async (req, res) => {
+  const { name, email, phone, avatar } = req.body;
+  try {
+    let user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-        user.name = name || user.name;
-        user.email = email || user.email;
-        user.phone = phone || user.phone;
-        user.avatar = avatar || user.avatar;
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.phone = phone || user.phone;
+    user.avatar = avatar || user.avatar;
 
-        await user.save();
-        res.json(user);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
+    await user.save();
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
 // @route   POST /api/users/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', async (req, res) => {
-    const { name, email, password, phone, avatar } = req.body; // Add other fields as necessary
-    try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-        let hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword, phone, avatar });
-        await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+router.post("/register", async (req, res) => {
+  const { name, email, password, phone, avatar } = req.body; // Add other fields as necessary
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
+    let hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      avatar,
+      verificationToken,
+    });
+    await newUser.save();
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+
+    await transporter.sendMail({
+      from: "Your App <no-reply@yourapp.com>",
+      to: newUser.email,
+      subject: "Verify Your Email",
+      html: `
+    <h3>Welcome 👋</h3>
+    <p>Click the link below to verify your email:</p>
+    <a href="${verifyLink}">Verify Email</a>
+  `,
+    });
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // @route   POST /api/users/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    try {
-        if (!user ) {
-            return res.status(400).json({ message: 'invalid email' });
-        }
-        if (!await bcrypt.compare(password, user.password)) {
-            return res.status(400).json({ message: 'invalid email or password' });
-        }
-        let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '20m' });
-        res.status(200).json({ message: 'Login successful', token, email: user.email, name: user.name, phone: user.phone, avatar: user.avatar });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  try {
+    if (!user) {
+      return res.status(400).json({ message: "invalid email" });
     }
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ message: "invalid email or password" });
+    }
+    let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "20m",
+    });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      avatar: user.avatar,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;

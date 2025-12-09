@@ -18,12 +18,14 @@ const invoiceRoutes = require('./routes/invoices');
 const clientRoutes = require('./routes/clients');
 const userRoutes = require('./routes/auth');
 const settingsRoutes = require('./routes/settings');
+const verificationRoutes = require('./routes/verification');
 
 // Use Routes
 app.use('/api/users', userRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/auth', verificationRoutes);
 
 
 app.listen(process.env.PORT || 5000, () => {

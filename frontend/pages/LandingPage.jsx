@@ -8,6 +8,8 @@ import {
   IconBolt,
   IconCheck
 } from '@tabler/icons-react';
+import  Image1  from "../src/assets/image1.webp";
+import  Image2  from "../src/assets/image2.webp";
 
 export default function LandingPage() {
   return (
@@ -44,6 +46,22 @@ export default function LandingPage() {
                 Learn More
               </Link>
             </div>
+
+            {/* Dashboard Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="mt-16 relative max-w-5xl mx-auto"
+            >
+              <div className="rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4 dark:bg-white/5 dark:ring-white/10">
+                <img
+                  src={Image1}
+                  alt="Dashboard Preview"
+                  className="rounded-md shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10 w-full"
+                />
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -96,20 +114,12 @@ export default function LandingPage() {
             </div>
             <div className="relative">
               <div className="absolute inset-0 bg-blue-600 blur-3xl opacity-20 rounded-full"></div>
-              <div className="relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-8">
-                {/* Abstract UI representation */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="h-8 w-32 bg-neutral-200 dark:bg-neutral-800 rounded"></div>
-                  <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-full"></div>
-                </div>
-                <div className="space-y-4">
-                  <div className="h-4 w-full bg-neutral-100 dark:bg-neutral-800 rounded"></div>
-                  <div className="h-4 w-3/4 bg-neutral-100 dark:bg-neutral-800 rounded"></div>
-                  <div className="h-4 w-1/2 bg-neutral-100 dark:bg-neutral-800 rounded"></div>
-                </div>
-                <div className="mt-8 flex justify-end">
-                  <div className="h-10 w-32 bg-blue-600 rounded-lg"></div>
-                </div>
+              <div className="relative hover:scale-160 transition-transform duration-500 rounded-2xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
+                <img 
+                  src={Image2} 
+                  alt="Invoice List Interface" 
+                  className="w-full h-auto"
+                />
               </div>
             </div>
           </div>

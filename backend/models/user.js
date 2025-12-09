@@ -9,6 +9,8 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     phone: { type: String },
     avatar: { type: String, default: '' },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
     settings: { type: Schema.Types.ObjectId, ref: 'Settings' },
     invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
 });
