@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/client');
+const authMiddleware = require('../middleware/authMiddleware');
+
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
 // @route   GET /api/clients
-// @desc    Get all clients
-// @access  Public (Consider making private)
+// @desc    Get all clients for the logged-in user
+// @access  Private
 router.get('/', async (req, res) => {
     try {
-        const clients = await Client.find();
+        const clients = await Client.find({ userId: req.user.id });
         res.json(clients);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -16,10 +20,10 @@ router.get('/', async (req, res) => {
 
 // @route   GET /api/clients/:id
 // @desc    Get one client by ID
-// @access  Public (Consider making private)
+// @access  Private
 router.get('/:id', async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id);
+        const client = await Client.findOne({ _id: req.params.id, userId: req.user.id });
         if (!client) return res.status(404).json({ message: 'Client not found' });
         res.json(client);
     } catch (err) {
@@ -29,9 +33,10 @@ router.get('/:id', async (req, res) => {
 
 // @route   POST /api/clients
 // @desc    Create a new client
-// @access  Public (Consider making private)
+// @access  Private
 router.post('/', async (req, res) => {
     const client = new Client({
+        userId: req.user.id,
         name: req.body.name,
         address: req.body.address,
         ice: req.body.ice
@@ -47,10 +52,10 @@ router.post('/', async (req, res) => {
 
 // @route   PUT /api/clients/:id
 // @desc    Update a client
-// @access  Public (Consider making private)
+// @access  Private
 router.put('/:id', async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id);
+        const client = await Client.findOne({ _id: req.params.id, userId: req.user.id });
         if (!client) return res.status(404).json({ message: 'Client not found' });
 
         if (req.body.name != null) client.name = req.body.name;
@@ -66,10 +71,10 @@ router.put('/:id', async (req, res) => {
 
 // @route   DELETE /api/clients/:id
 // @desc    Delete a client
-// @access  Public (Consider making private)
+// @access  Private
 router.delete('/:id', async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id);
+        const client = await Client.findOne({ _id: req.params.id, userId: req.user.id });
         if (!client) return res.status(404).json({ message: 'Client not found' });
         
         await client.deleteOne();

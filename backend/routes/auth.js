@@ -73,11 +73,11 @@ router.post("/register", async (req, res) => {
     const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
     await transporter.sendMail({
-      from: "Your App <no-reply@yourapp.com>",
+      from: "Quick-Bill <no-reply@yourapp.com>",
       to: newUser.email,
       subject: "Verify Your Email",
       html: `
-    <h3>Welcome 👋</h3>
+    <h3>Welcome to Quick-Bill 👋</h3>
     <p>Click the link below to verify your email:</p>
     <a href="${verifyLink}">Verify Email</a>
   `,

@@ -2,12 +2,14 @@ import React from "react";
 import { useState } from "react";
 import api from "../src/lib/api";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const navigate = useNavigate();
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -23,6 +25,7 @@ export default function Register() {
       // Call register API
       const response = await api.post("/users/register", formData);
       console.log("Registration successful:", response.data);
+      navigate("/login");
       // Optionally, redirect to login page or show success message
     } catch (error) {
       console.error("There was an error registering!", error);
