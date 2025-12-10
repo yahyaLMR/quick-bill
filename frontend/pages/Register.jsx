@@ -25,7 +25,7 @@ export default function Register() {
       // Call register API
       const response = await api.post("/users/register", formData);
       console.log("Registration successful:", response.data);
-      navigate("/login");
+      navigate("/verification-sent");
       // Optionally, redirect to login page or show success message
     } catch (error) {
       console.error("There was an error registering!", error);

@@ -16,6 +16,7 @@ import Pricing from "../pages/Pricing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import VerifyEmail from "../pages/VerifyEmail";
+import VerificationSent from "../pages/VerificationSent";
 import DashboardLayout from "../layouts/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verification-sent" element={<VerificationSent />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
           {/* Global 404 */}
           <Route path="*" element={<Page404 />} />
