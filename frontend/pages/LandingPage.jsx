@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react';
 import  Image1  from "../src/assets/image1.webp";
 import  Image2  from "../src/assets/image2.webp";
+import Features from './Features';
 
 export default function LandingPage() {
   return (
@@ -58,6 +59,7 @@ export default function LandingPage() {
                 <img
                   src={Image1}
                   alt="Dashboard Preview"
+                  loading="lazy"
                   className="rounded-md shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10 w-full"
                 />
               </div>
@@ -95,6 +97,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      {/* Features section */}
+
+      <Features />
 
       {/* Benefits / How it works */}
       <section className="py-24 bg-neutral-50 dark:bg-neutral-800/50">
@@ -118,6 +123,7 @@ export default function LandingPage() {
                 <img 
                   src={Image2} 
                   alt="Invoice List Interface" 
+                  loading="lazy"
                   className="w-full h-auto"
                 />
               </div>

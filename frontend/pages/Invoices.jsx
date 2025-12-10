@@ -537,6 +537,7 @@ const Invoices = () => {
                       <img 
                         src={settings.logoDataUrl} 
                         alt="Company Logo" 
+                        loading="lazy"
                         className="h-12 mb-2 object-contain" 
                       />
                     )}

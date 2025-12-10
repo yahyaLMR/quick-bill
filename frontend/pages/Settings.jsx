@@ -297,6 +297,7 @@ const Settings = () => {
                         <img
                           src={editSettings.logoDataUrl || null}
                           alt="Company Logo"
+                          loading="lazy"
                           className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                         />
                         <button
@@ -317,6 +318,7 @@ const Settings = () => {
                       <img
                         src={settings.logoDataUrl || null}
                         alt="Company Logo"
+                        loading="lazy"
                         className="h-12 w-12 object-contain border border-neutral-300 dark:border-neutral-600 rounded"
                       />
                     ) : (
