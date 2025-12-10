@@ -135,4 +135,96 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// @route   POST /api/users/forgot-password
+// @desc    Send password reset email
+// @access  Public
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if email exists
+      return res.json({
+        message: "If the email exists, a reset link was sent",
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 min
+    await user.save();
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"Quick-Bill" <no-reply@quickbill.com>',
+      to: user.email,
+      subject: "Reset your password",
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;">
+          <div style="background-color: #2563eb; padding: 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Password Reset Request 🔒</h1>
+          </div>
+          <div style="padding: 30px; color: #333333;">
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Hi <strong>${user.name}</strong>,</p>
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 30px;">You requested a password reset for your Quick-Bill account. Click the button below to set a new password. This link expires in 15 minutes.</p>
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${resetLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Reset Password</a>
+            </div>
+            <p style="font-size: 14px; color: #666666; margin-bottom: 0;">If the button above doesn't work, copy and paste the following link into your browser:</p>
+            <p style="font-size: 14px; color: #2563eb; word-break: break-all;"><a href="${resetLink}" style="color: #2563eb;">${resetLink}</a></p>
+          </div>
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #f0f0f0;">
+            <p style="font-size: 12px; color: #999999; margin: 0;">If you didn't request a password reset, please ignore this email.</p>
+            <p style="font-size: 12px; color: #999999; margin-top: 10px;">&copy; ${new Date().getFullYear()} Quick-Bill. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    });
+
+    res.json({ message: "Reset link sent" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// @route   POST /api/users/reset-password/:token
+// @desc    Reset password
+// @access  Public
+router.post("/reset-password/:token", async (req, res) => {
+  const { password } = req.body;
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successful ✅" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

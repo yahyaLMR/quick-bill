@@ -11,6 +11,8 @@ const userSchema = new Schema({
     avatar: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
     settings: { type: Schema.Types.ObjectId, ref: 'Settings' },
     invoices: [{ type: Schema.Types.ObjectId, ref: 'Invoice' }],
 });

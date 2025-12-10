@@ -71,6 +71,11 @@ export default function Login() {
               className="mt-1 block w-full rounded-md border border-gray-300 p-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
               placeholder="********"
             />
+            <div className="mt-1 flex justify-end">
+              <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+                Forgot password?
+              </Link>
+            </div>
             {error && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                 {error}
