@@ -229,15 +229,17 @@ const DashboardPage = () => {
             </div>
           </div>
           
-          <div className="flex h-64 items-end justify-between gap-2">
+          <div className="flex h-64 justify-between gap-2">
             {chartData.map((data, index) => (
-              <div key={index} className="group relative flex w-full flex-col items-center gap-2">
-                <div 
-                  className="w-full max-w-10 rounded-t-md bg-blue-500 transition-all hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500"
-                  style={{ height: `${(data.value / maxChartValue) * 100}%`, minHeight: '4px' }}
-                >
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap z-10">
-                    {formatCurrency(data.value)}
+              <div key={index} className="group relative flex h-full w-full flex-col items-center gap-2">
+                <div className="flex w-full flex-1 items-end justify-center">
+                  <div 
+                    className="relative w-full max-w-10 rounded-t-md bg-blue-500 transition-all hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500"
+                    style={{ height: `${(data.value / maxChartValue) * 100}%`, minHeight: '4px' }}
+                  >
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap z-10">
+                      {formatCurrency(data.value)}
+                    </div>
                   </div>
                 </div>
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.label}</span>
