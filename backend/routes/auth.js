@@ -72,16 +72,32 @@ router.post("/register", async (req, res) => {
     });
     const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
-    await transporter.sendMail({
-      from: "Quick-Bill <no-reply@yourapp.com>",
+    // Send email in background to avoid blocking the response
+    transporter.sendMail({
+      from: '"Quick-Bill" <no-reply@quickbill.com>',
       to: newUser.email,
-      subject: "Verify Your Email",
+      subject: "Verify Your Email Address",
       html: `
-    <h3>Welcome to Quick-Bill 👋</h3>
-    <p>Click the link below to verify your email:</p>
-    <a href="${verifyLink}">Verify Email</a>
-  `,
-    });
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;">
+          <div style="background-color: #2563eb; padding: 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Welcome to Quick-Bill! 🚀</h1>
+          </div>
+          <div style="padding: 30px; color: #333333;">
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Hi <strong>${name}</strong>,</p>
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 30px;">Thanks for getting started with Quick-Bill. We're excited to have you on board! To complete your registration and access your dashboard, please verify your email address.</p>
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a href="${verifyLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px;">Verify My Account</a>
+            </div>
+            <p style="font-size: 14px; color: #666666; margin-bottom: 0;">If the button above doesn't work, copy and paste the following link into your browser:</p>
+            <p style="font-size: 14px; color: #2563eb; word-break: break-all;"><a href="${verifyLink}" style="color: #2563eb;">${verifyLink}</a></p>
+          </div>
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #f0f0f0;">
+            <p style="font-size: 12px; color: #999999; margin: 0;">If you didn't create an account with Quick-Bill, please ignore this email.</p>
+            <p style="font-size: 12px; color: #999999; margin-top: 10px;">&copy; ${new Date().getFullYear()} Quick-Bill. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    }).catch(err => console.error("Failed to send verification email:", err));
 
     res.status(201).json({ message: "A verification email has been sent to your email address." });
   } catch (error) {
