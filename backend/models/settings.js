@@ -4,9 +4,9 @@ const Schema = mongoose.Schema;
 
 const settingsSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-    companyName: { type: String, default: '' },
-    companyAddress: { type: String, default: '' },
-    companyICE: { type: String, default: '' },
+    companyName: { type: String, default: 'COMPANY NAME' },
+    companyAddress: { type: String, default: 'COMPANY ADDRESS' },
+    companyICE: { type: String, default: 'COMPANY ICE' },
     logoDataUrl: { type: String, default: '' },
     vatEnabled: { type: Boolean, default: true },
     vatRate: { type: Number, default: 0.2 }, // 20%
