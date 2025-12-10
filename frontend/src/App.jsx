@@ -31,7 +31,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 export default function App() {
   return (
     <>
-      <Toaster position="top-left" />
+      <Toaster position="top-center " />
       <Routes>
         {/* Public Routes (With Navbar) */}
         <Route element={<PublicLayout />}>

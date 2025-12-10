@@ -9,11 +9,13 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     const formData = {
       name: fullName,
       email: email,
@@ -29,6 +31,8 @@ export default function Register() {
       // Optionally, redirect to login page or show success message
     } catch (error) {
       console.error("There was an error registering!", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,9 +96,12 @@ export default function Register() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700"
+            disabled={isLoading}
+            className={`w-full rounded-md py-2 text-white ${
+              isLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Sign Up
+            {isLoading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
         <div className="mt-4 text-center">
