@@ -50,6 +50,14 @@ npm run dev
 
 The API runs at `http://localhost:5000/api` by default.
 
+To load sample data into MongoDB, run:
+```powershell
+cd "c:\Users\pc\Desktop\quick-bill\backend"
+npm run seed
+```
+
+The seed script creates one demo user, two clients, and seven invoices with mixed `paid`, `pending`, and `overdue` statuses. It clears existing `users`, `clients`, `invoices`, and `settings` documents first, so use it only when you want a fresh sample dataset.
+
 ## Frontend Setup
 
 1. Install dependencies:
@@ -78,6 +86,7 @@ See `frontend/DATA_FLOW.md` for detailed component data flow.
 
 Backend (from `backend/`):
 - `npm start`: start server
+- `npm run seed`: reset and populate sample data
 
 Frontend (from `frontend/`):
 - `npm run dev`: start Vite dev server
