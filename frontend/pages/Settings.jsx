@@ -94,21 +94,27 @@ const Settings = () => {
   // Save settings
   const handleSave = async () => {
     try {
-      const formData = new FormData();
-      
-      Object.keys(editSettings).forEach(key => {
-        if (key === 'logoDataUrl') {
-            if (!logoFile && editSettings.logoDataUrl === '') {
-                formData.append('logoDataUrl', '');
-            }
-        } else {
-             formData.append(key, editSettings[key]);
-        }
-      });
+      let nextLogoDataUrl = editSettings.logoDataUrl;
 
       if (logoFile) {
-        formData.append('logo', logoFile);
+        const logoFormData = new FormData();
+        logoFormData.append('name', logoFile.name);
+        logoFormData.append('image', logoFile);
+
+        const uploadResponse = await api.post('/upload', logoFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        nextLogoDataUrl = uploadResponse.data.dataUrl;
       }
+
+      const formData = new FormData();
+
+      Object.entries({ ...editSettings, logoDataUrl: nextLogoDataUrl }).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
 
       const response = await api.put('/settings', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }

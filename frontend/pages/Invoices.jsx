@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../src/lib/api';
+import { resolveImageDataUrl } from '../src/lib/utils';
 import {
   IconFileInvoice,
   IconDownload,
@@ -64,7 +65,13 @@ const Invoices = () => {
           api.get('/settings')
         ]);
         setInvoices(invoicesRes.data);
-        setSettings(settingsRes.data);
+
+        const normalizedSettings = {
+          ...settingsRes.data,
+          logoDataUrl: await resolveImageDataUrl(settingsRes.data?.logoDataUrl),
+        };
+
+        setSettings(normalizedSettings);
       } catch (error) {
         console.error('Error fetching data:', error);
         localStorage.removeItem("token");

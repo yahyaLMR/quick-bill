@@ -33,7 +33,7 @@ router.put('/', authMiddleware, upload.single('logo'), async (req, res) => {
         }
         
         // Update fields
-        const fields = ['companyName', 'companyAddress', 'companyICE', 'vatEnabled', 'vatRate', 'currency', 'numberingPrefix', 'zeroPadding', 'resetNumberYearly', 'businessType', 'monthlyCap'];
+        const fields = ['companyName', 'companyAddress', 'companyICE', 'logoDataUrl', 'vatEnabled', 'vatRate', 'currency', 'numberingPrefix', 'zeroPadding', 'resetNumberYearly', 'businessType', 'monthlyCap'];
         
         fields.forEach(field => {
             if (req.body[field] !== undefined) {
@@ -45,8 +45,8 @@ router.put('/', authMiddleware, upload.single('logo'), async (req, res) => {
         if (req.file) {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
             settings.logoDataUrl = `${baseUrl}/uploads/${req.file.filename}`;
-        } else if (req.body.logoDataUrl === '') {
-            settings.logoDataUrl = '';
+        } else if (req.body.logoDataUrl !== undefined) {
+            settings.logoDataUrl = req.body.logoDataUrl;
         }
 
         await settings.save();

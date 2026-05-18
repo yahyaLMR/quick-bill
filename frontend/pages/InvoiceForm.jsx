@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../src/lib/api';
+import { resolveImageDataUrl } from '../src/lib/utils';
 import {
   IconFileInvoice,
   IconUser,
@@ -60,8 +61,13 @@ const InvoiceForm = () => {
           api.get('/clients'),
           api.get('/invoices')
         ]);
-        
-        setSettings(settingsRes.data);
+
+        const normalizedSettings = {
+          ...settingsRes.data,
+          logoDataUrl: await resolveImageDataUrl(settingsRes.data?.logoDataUrl),
+        };
+
+        setSettings(normalizedSettings);
         setClients(clientsRes.data);
         
         const existingInvoices = invoicesRes.data;

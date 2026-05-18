@@ -24,8 +24,10 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   logo: {
-    width: 50,
-    height: 50,
+    width: 140,
+    height: 40,
+    objectFit: 'contain',
+    objectPosition: 'left center',
     marginBottom: 5,
   },
   companyName: {

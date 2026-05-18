@@ -1,15 +1,15 @@
 # Quick Bill
 
-Quick Bill is a full‑stack invoicing application with a Node/Express + MongoDB backend and a React + Vite frontend. It lets you manage clients, configure company settings, create invoices with VAT and discounts, and view dashboards and statistics.
+Quick Bill is a full-stack invoicing app with a Node/Express + MongoDB backend and a React + Vite frontend. It supports client management, company settings, invoice creation, PDF export, dashboard stats, and logo uploads.
 
-**Live Features**
-- Dashboard with summary cards, recent activity, and revenue chart
+**Key Features**
+- Dashboard with summary cards and recent activity
 - Clients CRUD with ICE tracking
-- Invoice creation with dynamic line items, VAT, discounts, preview, and PDF
-- Invoices list with filter/search/sort, edit/duplicate/delete, CSV export
-- Settings for company info, VAT, currency, numbering, business type
-- Profile view/edit and quick stats
-- Authentication (JWT) with protected dashboard routes
+- Invoice creation with dynamic line items, VAT, discounts, preview, and PDF export
+- Invoices list with search, filter, sort, edit, duplicate, delete, and CSV export
+- Company settings with logo upload, VAT, currency, numbering, and business type
+- Profile view/edit
+- JWT authentication with protected dashboard routes
 
 **Tech Stack**
 - Backend: Node.js, Express, MongoDB (Mongoose)
@@ -22,14 +22,15 @@ Quick Bill is a full‑stack invoicing application with a Node/Express + MongoDB
 quick-bill/
 ├── backend/              # Express API
 │   ├── server.js         # App entry
-│   ├── routes/           # auth, clients, invoices, settings
+│   ├── example.env       # Environment template
+│   ├── routes/           # auth, clients, invoices, settings, upload
 │   ├── models/           # Mongoose schemas
-│   ├── middleware/       # auth, upload
+│   ├── middleware/       # auth and upload helpers
 │   └── config/dbconnect.js
 └── frontend/             # React app (Vite)
-	├── src/              # App code (router, components)
-	├── pages/            # Feature pages
-	└── layouts/          # Public/Dashboard layouts
+    ├── src/              # App code, shared components, utilities
+    ├── pages/            # Feature pages
+    └── layouts/          # Public/Dashboard layouts
 ```
 
 ## Prerequisites
@@ -38,25 +39,23 @@ quick-bill/
 
 ## Backend Setup
 
-1. Create the environment file `backend/.env` with values like:
-```
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/quick-bill
-JWT_SECRET=replace_with_a_strong_secret
-```
+1. Copy `backend/example.env` to `backend/.env` and fill in your real values.
 
 2. Install dependencies and start the server:
 ```powershell
-cd "c:\Users\pc\Desktop\final project\quick-bill\backend"; npm install; npm run start
+cd "c:\Users\pc\Desktop\quick-bill\backend"
+npm install
+npm run dev
 ```
 
-The API will run at `http://localhost:5000/api`.
+The API runs at `http://localhost:5000/api` by default.
 
 ## Frontend Setup
 
 1. Install dependencies:
 ```powershell
-cd "c:\Users\pc\Desktop\final project\quick-bill\frontend"; npm install
+cd "c:\Users\pc\Desktop\quick-bill\frontend"
+npm install
 ```
 
 2. Start the React dev server:
@@ -64,13 +63,14 @@ cd "c:\Users\pc\Desktop\final project\quick-bill\frontend"; npm install
 npm run dev
 ```
 
-The app will open at the URL Vite prints (e.g. `http://localhost:5173`).
+The app will open at the URL Vite prints (for this workspace it often falls back to `http://localhost:5174`).
 
 ## Configuration & Data
 
-- Currency and VAT are configured in the Settings page and read by the InvoiceForm, Invoices, and Dashboard.
-- Authentication token (JWT) is stored in `localStorage` and automatically added by `src/lib/api.js` to requests.
-- Some components may store derived UI state in `sessionStorage` when appropriate.
+- Currency, VAT, invoice numbering, and logo settings are stored in MongoDB through the Settings page.
+- Logo uploads use the backend upload route and are rendered in invoices and PDFs.
+- Authentication token (JWT) is stored in `localStorage` and automatically added by `src/lib/api.js`.
+- Some components keep derived UI state in `sessionStorage` when appropriate.
 
 See `frontend/DATA_FLOW.md` for detailed component data flow.
 
@@ -88,12 +88,17 @@ Frontend (from `frontend/`):
 ## API Overview
 
 Base URL: `http://localhost:5000/api`
-- `POST /auth/login`, `POST /auth/register`
+- `POST /users/login`, `POST /users/register`
+- `GET/PUT /users/profile`
 - `GET/POST/PUT/DELETE /clients`
 - `GET/POST/PUT/DELETE /invoices`
 - `GET/PUT /settings`
+- `POST /upload` for logo/image upload
+- `GET /auth/verify-email/:token`
 
 ## Notes
-- Ensure MongoDB is running and `MONGO_URI` is correct.
-- If ports are busy, update `PORT` in `.env` and `api.baseURL` in `frontend/src/lib/api.js` accordingly.
+
+- Ensure MongoDB is running and `MONGODB_URI` is correct.
+- If ports are busy, update `PORT` in `.env` and `baseURL` in `frontend/src/lib/api.js`.
+- Logo images are normalized before PDF generation so the invoice PDF can embed them reliably.
 - Tailwind CSS is enabled via Vite plugin; dark mode styles are included across components.
