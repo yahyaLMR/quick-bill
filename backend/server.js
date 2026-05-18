@@ -2,9 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const app = express();
-const User = require('./models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -31,40 +28,6 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/auth', verificationRoutes);
 app.use('/api/upload', uploadRoutes);
-
-app.post('/api/users/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: 'invalid email' });
-    }
-
-    const passwordMatches = await bcrypt.compare(password, user.password);
-    if (!passwordMatches) {
-      return res.status(400).json({ message: 'invalid email or password' });
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '20m',
-    });
-
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-      email: user.email,
-      name: user.name,
-      phone: user.phone,
-      avatar: user.avatar,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server is running on port ${process.env.PORT || 5000}`);
