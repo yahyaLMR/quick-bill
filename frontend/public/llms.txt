@@ -1,0 +1,12 @@
+# Quick Bill - AI Agents Documentation
+
+Quick Bill is a full-stack invoicing application that allows users to create professional invoices, manage clients, and track payments.
+
+## Features
+- Dashboard with revenue and invoice statistics
+- Client management (CRUD)
+- Invoice generation with PDF export
+- Company settings and logo customization
+
+## Audience
+Freelancers and small businesses looking for an easy-to-use billing and invoicing solution.

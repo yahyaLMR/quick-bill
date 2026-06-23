@@ -42,6 +42,7 @@ export default function LandingPage() {
               </Link>
               <Link 
                 to="/features" 
+                aria-label="Learn more about Quick Bill features"
                 className="px-8 py-4 text-lg font-semibold rounded-full bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all"
               >
                 Learn More
